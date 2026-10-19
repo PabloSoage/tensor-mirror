@@ -1,0 +1,5 @@
+{"arch": "Turing", "inst": "m16n8k8.f16.f16.f16.f16", "tiles": 4105, "elements": 525440, "gpu_vs_model": 0, "gpu_vs_model_raw_tiles": 0, "gpu_vs_model_scaled_tiles": 0, "gpu_vs_mmasim": 0, "model_vs_mmasim": 0}
+{"arch": "Turing", "inst": "m16n8k8.f32.f16.f16.f32", "tiles": 4106, "elements": 525568, "gpu_vs_model": 0, "gpu_vs_model_raw_tiles": 0, "gpu_vs_model_scaled_tiles": 0, "gpu_vs_mmasim": 0, "model_vs_mmasim": 0}
+{"arch": "Turing", "inst": "m8n8k4.f16.f16.f16.f16", "tiles": 4105, "elements": 262720, "gpu_vs_model": 0, "gpu_vs_model_raw_tiles": 0, "gpu_vs_model_scaled_tiles": 0, "gpu_vs_mmasim": 13, "model_vs_mmasim": 13}
+{"arch": "Turing", "inst": "m8n8k4.f32.f16.f16.f16", "tiles": 4105, "elements": 262720, "gpu_vs_model": 0, "gpu_vs_model_raw_tiles": 0, "gpu_vs_model_scaled_tiles": 0, "gpu_vs_mmasim": 47429, "model_vs_mmasim": 47429}
+{"arch": "Turing", "inst": "m8n8k4.f32.f16.f16.f32", "tiles": 4106, "elements": 262784, "gpu_vs_model": 0, "gpu_vs_model_raw_tiles": 0, "gpu_vs_model_scaled_tiles": 0, "gpu_vs_mmasim": 49758, "model_vs_mmasim": 49758}

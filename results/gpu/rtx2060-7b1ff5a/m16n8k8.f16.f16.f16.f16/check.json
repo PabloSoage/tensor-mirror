@@ -1,0 +1,59 @@
+{
+ "arch": "Turing",
+ "inst": "m16n8k8.f16.f16.f16.f16",
+ "tiles": 4105,
+ "elements": 525440,
+ "gpu_vs_model": 0,
+ "gpu_vs_model_raw_tiles": 0,
+ "gpu_vs_model_scaled_tiles": 0,
+ "gpu_vs_mmasim": 0,
+ "model_vs_mmasim": 0,
+ "directed": {
+  "e_zero_small_product": {
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_of_tile_ok": true
+  },
+  "negative_c_tiny_product": {
+   "gpu": "0xbc00",
+   "model": "0xbc00",
+   "rest_of_tile_ok": true
+  },
+  "positive_c_tiny_negative_product": {
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_of_tile_ok": true
+  },
+  "exact_cancellation": {
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_of_tile_ok": true
+  },
+  "minus_zero_c": {
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_of_tile_ok": true
+  },
+  "subnormal_c": {
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_of_tile_ok": true
+  },
+  "nan_payload": {
+   "gpu": "0x7fff",
+   "model": "0x7fff",
+   "rest_of_tile_ok": true
+  },
+  "inf_minus_inf": {
+   "gpu": "0x7fff",
+   "model": "0x7fff",
+   "rest_of_tile_ok": true
+  },
+  "inf_times_zero": {
+   "gpu": "0x7fff",
+   "model": "0x7fff",
+   "rest_of_tile_ok": true
+  }
+ },
+ "first_mismatches": []
+}
