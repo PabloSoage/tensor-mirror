@@ -211,6 +211,7 @@ module tfdpa_f16 #(
     // (normal), or to units of 2**(1 - DB - DM) (subnormal). RZ drops the rest; RNE adds
     // one when the dropped part is above half, or exactly half with an odd kept part.
     logic signed [11:0] e_res, e_out;       // exponent of the leading bit, before/after rounding
+    logic [11:0]        e_field;            // biased exponent of a normal result
     int                 sh;                 // right shift to the output's last place
     logic [SW-1:0]      q, rem, half;
     logic               up;
@@ -235,20 +236,25 @@ module tfdpa_f16 #(
             rem = SW'(m5);                            // everything is dropped
             half = '1;                                // more than any remainder: never rounds up
         end
+`ifdef MUT_RZ_OUT  // mutant: truncate the f16 output instead of rounding to nearest
+        up = 1'b0;
+`else
         up = D_F16 != 0 && (rem > half || (rem == half && rem != '0 && q[0]));
+`endif
         q = q + SW'(up);
         e_out = e_res;
         if (e_res >= 12'(1 - DB) && q[DM + 1]) begin  // rounding carried into a new binade
             q = q >> 1;
             e_out = e_res + 12'sd1;
         end
+        e_field = (e_res >= 12'(1 - DB) ? e_out : 12'(1 - DB)) + 12'(DB);
         if (m5 == '0 || q == '0)
             fin = 32'd0;                             // +0, whatever the signs
         else if (e_out > 12'(DB))
             fin = sign5 ? NINF : PINF;               // as MMA-Sim for RZ; not observable on Volta
         else if (q[DM])                              // normal (a subnormal can round up into one)
             fin = (32'(sign5) << (D_F16 != 0 ? 15 : 31))
-                | (32'((e_res >= 12'(1 - DB) ? e_out : 12'(1 - DB)) + 12'(DB)) << DM)
+                | (32'(e_field) << DM)
                 | 32'(q[DM-1:0]);
         else
             fin = (32'(sign5) << (D_F16 != 0 ? 15 : 31)) | 32'(q[DM-1:0]);

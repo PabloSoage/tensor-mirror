@@ -6,8 +6,8 @@ set pipe [expr {[llength $argv] > 2 ? [lindex $argv 2] : 0}]
 set here [file dirname [file normalize [info script]]]
 file mkdir $out
 
-read_verilog -sv [list $here/../rtl/tfdpa_f16_f32.sv $here/tfdpa_f16_f32_reg.sv]
-synth_design -top tfdpa_f16_f32_reg -part xck26-sfvc784-2LV-c -mode out_of_context -generic PIPE=$pipe
+read_verilog -sv [list $here/../rtl/tfdpa_f16.sv $here/tfdpa_f16_reg.sv]
+synth_design -top tfdpa_f16_reg -part xck26-sfvc784-2LV-c -mode out_of_context -generic PIPE=$pipe
 create_clock -name clk -period $period [get_ports clk]
 opt_design
 place_design

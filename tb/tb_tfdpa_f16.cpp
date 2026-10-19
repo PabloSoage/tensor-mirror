@@ -1,4 +1,4 @@
-// Verilator testbench for rtl/tfdpa_f16_f32.sv: reads vectors from tools/rtl_vectors.py
+// Verilator testbench for rtl/tfdpa_f16.sv: reads vectors from tools/rtl_vectors.py
 // and compares every output bit. Exit status 1 on any mismatch.
 //   tb <vectors.txt> [max mismatches to print]
 // Build with -DTB_LAT=<latency> (0 for PIPE = 0, 7 for PIPE = 1): one case per cycle, and
@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <vector>
 
-#include "Vtfdpa_f16_f32.h"
+#include "Vtfdpa_f16.h"
 #include "verilated.h"
 
 #ifndef TB_L
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     fclose(f);
     const long show = argc > 2 ? atol(argv[2]) : 10;
     const long n = long(cases.size());
-    auto *dut = new Vtfdpa_f16_f32;
+    auto *dut = new Vtfdpa_f16;
     long bad = 0;
 
     auto check = [&](long i) {

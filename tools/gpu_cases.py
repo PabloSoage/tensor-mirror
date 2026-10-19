@@ -50,6 +50,9 @@ DIRECTED = [
     ("discrepancy_example", [f16(-(2.0**13)), f16(-0.5), f16(-0.25), f16(-0.125)],
      [f16(2.0**10), f16(1.0), f16(1.0), f16(1.0)], 2.0**23),
     ("e_zero_small_product", [f16((1 + 2.0**-10) * 2.0**-12)], [f16((1 + 3 * 2.0**-10) * 2.0**-12)], 0.0),
+    # 2**-25 + 2**-43 with C = +0: in f16 it rounds up to 2**-24 unless e_zero drops the
+    # 2**-43, which leaves an exact tie that goes to 0 (the subnormal 2**-24 times 2**-19)
+    ("e_zero_rne_tie", [f16(2.0**-12), 0x0001], [f16(2.0**-13), f16(2.0**-19)], 0.0),
     ("negative_c_tiny_product", [f16(2.0**-15)], [f16(2.0**-15)], -1.0),
     ("positive_c_tiny_negative_product", [f16(-(2.0**-15))], [f16(2.0**-15)], 1.0),
     ("exact_cancellation", [f16(1.0), f16(-1.0)], [f16(1.0), f16(1.0)], 0.0),

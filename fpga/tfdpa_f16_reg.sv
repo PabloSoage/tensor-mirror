@@ -1,10 +1,11 @@
-// Registers around tfdpa_f16_f32 so that out-of-context synthesis reports its
+// Registers around tfdpa_f16 so that out-of-context synthesis reports its
 // register-to-register delay: with PIPE = 0 that is the whole combinational unit, with
 // PIPE = 1 the slowest pipeline stage.
-module tfdpa_f16_f32_reg #(
+module tfdpa_f16_reg #(
     parameter int L = 4,
     parameter int F = 23,
-    parameter int EZERO = -131,
+    parameter int C_F16 = 0,
+    parameter int D_F16 = 0,
     parameter int PIPE = 0
 ) (
     input  logic               clk,
@@ -16,7 +17,7 @@ module tfdpa_f16_f32_reg #(
     logic [L-1:0][15:0] a_q, b_q;
     logic [31:0] c_q, d_c;
 
-    tfdpa_f16_f32 #(.L(L), .F(F), .EZERO(EZERO), .PIPE(PIPE)) u (
+    tfdpa_f16 #(.L(L), .F(F), .C_F16(C_F16), .D_F16(D_F16), .PIPE(PIPE)) u (
         .clk(clk), .a(a_q), .b(b_q), .c(c_q), .d(d_c));
 
     always_ff @(posedge clk) begin

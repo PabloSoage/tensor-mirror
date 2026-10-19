@@ -1,4 +1,4 @@
-"""Test vectors for rtl/tfdpa_f16_f32.sv from the integer model.
+"""Test vectors for rtl/tfdpa_f16.sv from the integer model.
 
 One case per line, hex: a[0..L-1] b[0..L-1] c d. Three kinds of case, interleaved:
 
@@ -22,7 +22,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from gpu_cases import c_bits, directed  # noqa: E402
 
 from tensormirror.arch import tfdpa  # noqa: E402
-from tensormirror.formats import FP32, decode  # noqa: E402
+from tensormirror.formats import FP16, decode, encode  # noqa: E402
 from tensormirror.tfdpa import t_fdpa  # noqa: E402
 
 
@@ -38,23 +38,27 @@ def f32_scaled(rng: random.Random, lo: int, hi: int) -> int:
 def cases(p, n: int, seed: int):
     rng = random.Random(seed)
     L = p.L_max
+    c16 = p.fc is FP16
     for i in range(n):
         kind = i % 3
         if kind == 0:
             a = [rng.getrandbits(16) for _ in range(L)]
             b = [rng.getrandbits(16) for _ in range(L)]
-            c = rng.getrandbits(32)
+            c = rng.getrandbits(p.fc.width)
         else:
             base = rng.randint(3, 27)
             a = [f16_scaled(rng, base - 2, base + 2) for _ in range(L)]
             b = [f16_scaled(rng, 13, 17) for _ in range(L)]
-            # products are ~2**(base - 15); put c in the same range (f32 bias 127)
-            c = f32_scaled(rng, base - 15 + 127 - 3, base - 15 + 127 + 3)
+            # products are ~2**(base - 15); put c in the same range
+            if c16:
+                c = f16_scaled(rng, max(base - 3, 1), min(base + 3, 30))
+            else:
+                c = f32_scaled(rng, base - 15 + 127 - 3, base - 15 + 127 + 3)
             if kind == 2:
-                s = t_fdpa(p, a, b, 0)
-                dec = decode(FP32, s)
+                dec = decode(p.fd, t_fdpa(p, a, b, 0))
                 if dec.kind == "num" and dec.sig:
-                    c = s ^ (1 << 31)  # -sum: the result keeps only what alignment changes
+                    # -sum in C's format: the result keeps only what alignment changes
+                    c = encode(p.fc, not dec.neg, dec.sig, dec.exp - p.fd.mbits, "rne")
         yield a, b, c
 
 
