@@ -1,0 +1,33 @@
+/dts-v1/;
+/plugin/;
+
+/* tensor-mirror on the KV260: the PL image, pl_clk0 at 200 MHz (fpga/build_kv260.tcl
+ * pl_mhz; change both together) and tm_pl's AXI4-Lite registers as a UIO device. The
+ * AXI DMA (0xA001_0000) is driven from user space through /dev/mem. */
+
+&fpga_full {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	firmware-name = "tensor-mirror.bit.bin";
+	resets = <&zynqmp_reset 116>, <&zynqmp_reset 117>, <&zynqmp_reset 118>, <&zynqmp_reset 119>;
+};
+
+&amba {
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	tm_clk0: tm_clk0 {
+		compatible = "xlnx,fclk";
+		#clock-cells = <0>;
+		clocks = <&zynqmp_clk 71>;
+		clock-output-names = "tm_pl_clk0";
+		assigned-clocks = <&zynqmp_clk 71>;
+		assigned-clock-rates = <200000000>;
+	};
+
+	tm_pl: tm@a0000000 {
+		compatible = "generic-uio";
+		reg = <0x0 0xa0000000 0x0 0x1000>;
+		clocks = <&tm_clk0>;
+	};
+};
