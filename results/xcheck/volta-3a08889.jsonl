@@ -1,0 +1,9 @@
+{"arch": "Volta", "types": "f32.f16.f16.f32", "k": 4, "cases": 1000000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.2, "t_tcmirror_s": 23.6}
+{"arch": "Volta", "types": "f32.f16.f16.f16", "k": 4, "cases": 1000000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.2, "t_tcmirror_s": 18.9}
+{"arch": "Volta", "types": "f16.f16.f16.f16", "k": 4, "cases": 1000000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.2, "t_tcmirror_s": 22.1}
+{"arch": "Volta", "types": "f32.f16.f16.f32", "k": 4, "cases": 100000, "seed": 2, "mutate": "F=22", "mismatches": 37215, "t_mmasim_s": 0.0, "t_tcmirror_s": 2.0}
+{"arch": "Volta", "types": "f32.f16.f16.f32", "k": 4, "cases": 100000, "seed": 2, "mutate": "F=24", "mismatches": 13825, "t_mmasim_s": 0.0, "t_tcmirror_s": 2.1}
+{"arch": "Volta", "types": "f32.f16.f16.f32", "k": 4, "cases": 100000, "seed": 2, "mutate": "rounding=rne", "mismatches": 6256, "t_mmasim_s": 0.1, "t_tcmirror_s": 2.4}
+{"arch": "Volta", "types": "f16.f16.f16.f16", "k": 4, "cases": 100000, "seed": 2, "mutate": "rounding=rz", "mismatches": 20851, "t_mmasim_s": 0.0, "t_tcmirror_s": 2.0}
+{"arch": "Volta", "types": "f32.f16.f16.f32", "k": 4, "cases": 100000, "seed": 2, "mutate": "e_zero=-130", "mismatches": 0, "t_mmasim_s": 0.0, "t_tcmirror_s": 2.1}
+{"arch": "Volta", "types": "f32.f16.f16.f16", "k": 4, "cases": 100000, "seed": 2, "mutate": "e_zero=-19", "mismatches": 0, "t_mmasim_s": 0.0, "t_tcmirror_s": 2.0}
