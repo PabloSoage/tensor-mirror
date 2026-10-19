@@ -31,3 +31,6 @@ vivado*.log
 .idea/
 *.swp
 .DS_Store
+
+# Git Bash crash dumps
+*.stackdump
