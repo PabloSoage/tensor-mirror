@@ -1,0 +1,34 @@
+{"arch": "Volta", "inst": "m8n8k4.f32.f16.f16.f32", "L": 4, "F": 23, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 2.7}
+{"arch": "Volta", "inst": "m8n8k4.f32.f16.f16.f16", "L": 4, "F": 23, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 2.6}
+{"arch": "Volta", "inst": "m8n8k4.f16.f16.f16.f16", "L": 4, "F": 23, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 2.6}
+{"arch": "Turing", "inst": "m16n8k8.f32.f16.f16.f32", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 4.9}
+{"arch": "Turing", "inst": "m16n8k8.f16.f16.f16.f16", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 4.1}
+{"arch": "Turing", "inst": "m8n8k4.f32.f16.f16.f32", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 2.7}
+{"arch": "Turing", "inst": "m8n8k4.f32.f16.f16.f16", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 2.6}
+{"arch": "Turing", "inst": "m8n8k4.f16.f16.f16.f16", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 2.7}
+{"arch": "Ampere", "inst": "m16n8k8.f32.tf32.tf32.f32", "L": 4, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 5.1}
+{"arch": "Ampere", "inst": "m16n8k4.f32.tf32.tf32.f32", "L": 4, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 2.7}
+{"arch": "Ampere", "inst": "m16n8k16.f32.f16.f16.f32", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 7.7}
+{"arch": "Ampere", "inst": "m16n8k16.f16.f16.f16.f16", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 7.6}
+{"arch": "Ampere", "inst": "m16n8k16.f32.bf16.bf16.f32", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 7.6}
+{"arch": "Ampere", "inst": "m16n8k8.f32.bf16.bf16.f32", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 4.2}
+{"arch": "Ampere", "inst": "m16n8k8.f32.f16.f16.f32", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 4.0}
+{"arch": "Ampere", "inst": "m16n8k8.f16.f16.f16.f16", "L": 8, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 4.0}
+{"arch": "Ada Lovelace", "inst": "m16n8k32.f32.e5m2.e5m2.f32", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 11.4}
+{"arch": "Ada Lovelace", "inst": "m16n8k32.f32.e5m2.e4m3.f32", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 11.8}
+{"arch": "Ada Lovelace", "inst": "m16n8k32.f32.e4m3.e5m2.f32", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 12.4}
+{"arch": "Ada Lovelace", "inst": "m16n8k32.f32.e4m3.e4m3.f32", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 12.7}
+{"arch": "Ada Lovelace", "inst": "m16n8k16.f32.e5m2.e5m2.f32", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 6.0}
+{"arch": "Ada Lovelace", "inst": "m16n8k16.f32.e5m2.e4m3.f32", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 6.4}
+{"arch": "Ada Lovelace", "inst": "m16n8k16.f32.e4m3.e5m2.f32", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 6.4}
+{"arch": "Ada Lovelace", "inst": "m16n8k16.f32.e4m3.e4m3.f32", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 6.9}
+{"arch": "Ada Lovelace", "inst": "m16n8k32.f16.e5m2.e5m2.f16", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 11.9}
+{"arch": "Ada Lovelace", "inst": "m16n8k32.f16.e5m2.e4m3.f16", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 11.9}
+{"arch": "Ada Lovelace", "inst": "m16n8k32.f16.e4m3.e5m2.f16", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 12.3}
+{"arch": "Ada Lovelace", "inst": "m16n8k32.f16.e4m3.e4m3.f16", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 12.8}
+{"arch": "Ada Lovelace", "inst": "m16n8k16.f16.e5m2.e5m2.f16", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 6.5}
+{"arch": "Ada Lovelace", "inst": "m16n8k16.f16.e5m2.e4m3.f16", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 6.7}
+{"arch": "Ada Lovelace", "inst": "m16n8k16.f16.e4m3.e5m2.f16", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 6.7}
+{"arch": "Ada Lovelace", "inst": "m16n8k16.f16.e4m3.e4m3.f16", "L": 16, "F": 13, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.1, "t_model_s": 6.9}
+{"arch": "Ada Lovelace", "inst": "m16n8k8.f32.tf32.tf32.f32", "L": 4, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 5.4}
+{"arch": "Ada Lovelace", "inst": "m16n8k4.f32.tf32.tf32.f32", "L": 4, "F": 24, "cases": 100000, "seed": 1, "mutate": "", "mismatches": 0, "t_mmasim_s": 0.0, "t_model_s": 3.0}
