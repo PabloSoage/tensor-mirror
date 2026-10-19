@@ -26,8 +26,11 @@ def e_zero(arch: str, fc: Format) -> int:
     return E_ZERO[arch][0 if fc is FP16 else 1]
 
 
-def tfdpa(arch: str, types: str) -> TFDPA:
-    """``types`` in PTX order, D.A.B.C, e.g. ``"f32.f16.f16.f32"``."""
+def tfdpa(arch: str, types: str, shape: str = "") -> TFDPA:
+    """``types`` in PTX order, D.A.B.C, e.g. ``"f32.f16.f16.f32"``; ``shape`` as in PTX.
+
+    Departures from MMA-Sim's parameters are ours, measured on a GPU, and marked [MED].
+    """
     d, a, b, c = types.split(".")
     (fa, size), (fb, _), (fc, _), (fd, _) = PTX_TYPES[a], PTX_TYPES[b], PTX_TYPES[c], PTX_TYPES[d]
     F = F_BITS[arch]
@@ -35,5 +38,10 @@ def tfdpa(arch: str, types: str) -> TFDPA:
         F = 13
         if fd is FP32:
             fd = E8M13
+    if arch == "Turing" and shape == "m8n8k4":
+        # Turing runs Volta's m8n8k4 with Volta's 23-bit sum, not its own 24 (MMA-Sim
+        # assumes 24 and has no Turing kernel for it). The zero exponent with C in f16
+        # stays Turing's -21. [MED] on an RTX 2060, 2026-10-19
+        F = 23
     return TFDPA(fa=fa, fb=fb, fc=fc, fd=fd, L_max=L_MAX_BYTES[arch] // size, F=F,
                  rounding="rne" if fd is FP16 else "rz", e_zero=e_zero(arch, fc))

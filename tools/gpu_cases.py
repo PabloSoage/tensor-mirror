@@ -139,8 +139,8 @@ def load(d_dir: pathlib.Path, meta: dict):
 
 
 def _model_tiles(job):
-    arch, types, a, b, c = job
-    p = tfdpa(arch, types)
+    arch, types, shape, a, b, c = job
+    p = tfdpa(arch, types, shape)
     nt, M, N = c.shape
     out = np.empty((nt, M, N), dtype=np.uint64)
     for t in range(nt):
@@ -153,7 +153,7 @@ def _model_tiles(job):
 
 def model_output(arch: str, ins: dict, a, b, c, jobs: int) -> np.ndarray:
     chunks = np.array_split(np.arange(c.shape[0]), max(1, jobs * 4))
-    work = [(arch, ins["types"], a[ix], b[ix], c[ix]) for ix in chunks if len(ix)]
+    work = [(arch, ins["types"], ins["shape"], a[ix], b[ix], c[ix]) for ix in chunks if len(ix)]
     if jobs > 1:
         with multiprocessing.Pool(jobs) as pool:
             parts = pool.map(_model_tiles, work)

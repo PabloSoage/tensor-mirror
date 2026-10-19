@@ -32,6 +32,15 @@ def test_discrepancy_example(arch, expected):
     assert as_f32(t_fdpa(p, a, b, f32(2.0**23))) == expected
 
 
+@pytest.mark.parametrize(("shape", "expected"), [("m8n8k4", 0.0), ("m16n8k8", -0.5)])
+def test_turing_runs_volta_m8n8k4_with_volta_sum_width(shape, expected):
+    # Measured on an RTX 2060: m8n8k4 keeps F = 23, Turing's own m16n8k8 has F = 24
+    p = tfdpa("Turing", "f32.f16.f16.f32", shape)
+    a = [f16(x) for x in (-(2.0**13), -0.5, -0.25, -0.125)]
+    b = [f16(x) for x in (2.0**10, 1.0, 1.0, 1.0)]
+    assert as_f32(t_fdpa(p, a, b, f32(2.0**23))) == expected
+
+
 def test_volta_truncates_at_23_bits_and_rounds_toward_zero():
     p = tfdpa("Volta", "f32.f16.f16.f32")
     one = f16(1.0)
