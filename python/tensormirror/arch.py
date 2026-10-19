@@ -35,15 +35,20 @@ def tfdpa(arch: str, types: str, shape: str = "", measured: bool = True) -> TFDP
     d, a, b, c = types.split(".")
     (fa, size), (fb, _), (fc, _), (fd, _) = PTX_TYPES[a], PTX_TYPES[b], PTX_TYPES[c], PTX_TYPES[d]
     F = F_BITS[arch]
+    ez = e_zero(arch, fc)
     if arch == "Ada Lovelace" and a in FP8:  # 13-bit FP8 accumulation [CIT MMA-Sim Table 4]
         F = 13
         if fd is FP32:
             fd = E8M13
     if measured and arch == "Turing" and shape == "m8n8k4":
         # Turing runs Volta's m8n8k4 with Volta's 23-bit sum, not its own 24 (MMA-Sim
-        # assumes 24 and has no Turing kernel for it). The zero exponent with C in f16
-        # stays Turing's -21. [MED] on an RTX 2060, 2026-10-19
+        # assumes 24 and has no Turing kernel for it). A zero C in f16 does not set the
+        # alignment: every e_zero <= -25 matches all the product exponents probed (-14 to
+        # -28, tools/probe_ezero.py), and they all give the same bits for f16 operands, whose
+        # smallest product exponent is -28. [MED] on an RTX 2060, 2026-10-19
         F = 23
+        if fc is FP16:
+            ez = -25
     if measured:
         # kind::f8f6f4 reads an E2M1 byte as E2M3 in bits 5:0: bits 1:0 are two more
         # mantissa bits, not padding (MMA-Sim drops them). With them zero it is E2M1 in
@@ -51,4 +56,4 @@ def tfdpa(arch: str, types: str, shape: str = "", measured: bool = True) -> TFDP
         fa = E2M3 if a == "e2m1" else fa
         fb = E2M3 if b == "e2m1" else fb
     return TFDPA(fa=fa, fb=fb, fc=fc, fd=fd, L_max=L_MAX_BYTES[arch] // size, F=F,
-                 rounding="rne" if fd is FP16 else "rz", e_zero=e_zero(arch, fc))
+                 rounding="rne" if fd is FP16 else "rz", e_zero=ez)
