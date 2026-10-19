@@ -25,6 +25,7 @@ fpga/build/
 .Xil/
 *.jou
 vivado*.log
+clockInfo.txt
 
 # Editors and OS
 .vscode/
