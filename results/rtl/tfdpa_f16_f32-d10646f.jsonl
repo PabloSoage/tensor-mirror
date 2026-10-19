@@ -1,0 +1,5 @@
+{"dut": "ref", "result": {"cases": 1000010, "mismatches": 0}}
+{"dut": "F22", "result": {"cases": 1000010, "mismatches": 856220}}
+{"dut": "F24", "result": {"cases": 1000010, "mismatches": 244290}}
+{"dut": "EZERO130", "result": {"cases": 1000010, "mismatches": 0}}
+{"dut": "ROUND_ALIGN", "result": {"cases": 1000010, "mismatches": 317416}}
