@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     uint32_t stalls = lite_read(0x01C);
     lite_write(0x020, 1);
     uint32_t cin2 = lite_read(0x014);
-    bool regs_ok = id == 0x544D4952 && lat == 7 && cin == uint32_t(n) && cout == uint32_t(n) && cin2 == 0;
+    bool regs_ok = id == 0x544D4952 && lat == 8 && cin == uint32_t(n) && cout == uint32_t(n) && cin2 == 0;
     printf("{\"cases\": %ld, \"received\": %ld, \"mismatches\": %ld, \"cycles\": %ld, \"stalls\": %u, "
            "\"regs_ok\": %s}\n", n, got, bad, cycles, stalls, regs_ok ? "true" : "false");
     delete dut;

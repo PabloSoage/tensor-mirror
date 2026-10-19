@@ -1,0 +1,4 @@
+vivado 2026.1
+tensor-mirror 92a8d30269cf4d81e5d355151805b7837a8cd45c
+part xck26-sfvc784-2LV-c
+pl_mhz 200

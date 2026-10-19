@@ -12,7 +12,8 @@
 //
 // PIPE = 0: combinational (clk unused). PIPE = 1: a register after each stage, one result
 // per cycle while ce is 1, LATENCY cycles from a, b, c to d:
-//   input -> decode -> multiply | max exponent -> align -> sum -> leading one -> output
+//   input -> decode -> multiply | max exponent -> align -> sum -> leading one -> shift -> round
+// (8 stages since the KV260 build: one output stage did not meet 200 MHz.)
 
 module tfdpa_f16 #(
     parameter int L = 4,                             // terms per group
@@ -30,7 +31,7 @@ module tfdpa_f16 #(
     output logic [31:0]        d
 );
     /* verilator lint_off UNUSEDPARAM */
-    localparam int LATENCY = PIPE != 0 ? 7 : 0;  // for instantiating code and the testbench
+    localparam int LATENCY = PIPE != 0 ? 8 : 0;  // for instantiating code and the testbench
     /* verilator lint_on UNUSEDPARAM */
     localparam int FP = 20;                 // fractional bits of an f16 x f16 product
     localparam int FC = C_F16 != 0 ? 10 : 23;  // fractional bits of c's significand
@@ -206,65 +207,83 @@ module tfdpa_f16 #(
     `TFDPA_STAGE(emax5, emax4)
     `TFDPA_STAGE(sp5, sp4)
 
-    // ---- 6. normalise and round to the output format, special values ------------------------
+    // ---- 6. shift to the output's last place -------------------------------------------------
     // The value is m5 * 2**(emax5 - F). It is shifted so that its last kept bit is the
     // output's last place: by sh = top - DM where top is the leading one's position
-    // (normal), or to units of 2**(1 - DB - DM) (subnormal). RZ drops the rest; RNE adds
-    // one when the dropped part is above half, or exactly half with an odd kept part.
-    logic signed [11:0] e_res, e_out;       // exponent of the leading bit, before/after rounding
-    logic [11:0]        e_field;            // biased exponent of a normal result
+    // (normal), or to units of 2**(1 - DB - DM) (subnormal). The dropped part (rem) and its
+    // half go to stage 7 with the kept part (q).
+    logic signed [11:0] e_res_d, e_res;     // exponent of the leading bit, before rounding
     int                 sh;                 // right shift to the output's last place
-    logic [SW-1:0]      q, rem, half;
-    logic               up;
-    logic [31:0]        fin, d6_d;
+    logic [SW-1:0]      q_d, q6, rem_d, rem6, half_d, half6;
+    logic               zero6;
+    logic               sign6;
+    spec_t              sp6;
 
     always_comb begin
-        e_res = 12'(msb5) + 12'(emax5) - 12'(F);
-        if (e_res >= 12'(1 - DB))
+        e_res_d = 12'(msb5) + 12'(emax5) - 12'(F);
+        if (e_res_d >= 12'(1 - DB))
             sh = int'(msb5) - DM;                     // normal
         else
             sh = (1 - DB - DM) - (int'(emax5) - F);   // subnormal: units of 2**(1 - DB - DM)
-        q = '0;
-        rem = '0;
-        half = '0;
+        q_d = '0;
+        rem_d = '0;
+        half_d = '0;
         if (sh <= 0) begin
-            q = SW'(m5) << (-sh);
+            q_d = SW'(m5) << (-sh);
         end else if (sh < SW) begin
-            q = SW'(m5) >> sh;
-            rem = SW'(m5) & ((SW'(1) << sh) - SW'(1));
-            half = SW'(1) << (sh - 1);
+            q_d = SW'(m5) >> sh;
+            rem_d = SW'(m5) & ((SW'(1) << sh) - SW'(1));
+            half_d = SW'(1) << (sh - 1);
         end else begin
-            rem = SW'(m5);                            // everything is dropped
-            half = '1;                                // more than any remainder: never rounds up
+            rem_d = SW'(m5);                          // everything is dropped
+            half_d = '1;                              // more than any remainder: never rounds up
         end
+    end
+    `TFDPA_STAGE(q6, q_d)
+    `TFDPA_STAGE(rem6, rem_d)
+    `TFDPA_STAGE(half6, half_d)
+    `TFDPA_STAGE(e_res, e_res_d)
+    `TFDPA_STAGE(zero6, m5 == '0)
+    `TFDPA_STAGE(sign6, sign5)
+    `TFDPA_STAGE(sp6, sp5)
+
+    // ---- 7. round to the output format, special values --------------------------------------
+    // RZ drops rem; RNE adds one when it is above half, or exactly half with an odd q.
+    logic signed [11:0] e_out;              // exponent of the leading bit after rounding
+    logic [11:0]        e_field;            // biased exponent of a normal result
+    logic [SW-1:0]      q;
+    logic               up;
+    logic [31:0]        fin, d7_d;
+
+    always_comb begin
 `ifdef MUT_RZ_OUT  // mutant: truncate the f16 output instead of rounding to nearest
         up = 1'b0;
 `else
-        up = D_F16 != 0 && (rem > half || (rem == half && rem != '0 && q[0]));
+        up = D_F16 != 0 && (rem6 > half6 || (rem6 == half6 && rem6 != '0 && q6[0]));
 `endif
-        q = q + SW'(up);
+        q = q6 + SW'(up);
         e_out = e_res;
         if (e_res >= 12'(1 - DB) && q[DM + 1]) begin  // rounding carried into a new binade
             q = q >> 1;
             e_out = e_res + 12'sd1;
         end
         e_field = (e_res >= 12'(1 - DB) ? e_out : 12'(1 - DB)) + 12'(DB);
-        if (m5 == '0 || q == '0)
+        if (zero6 || q == '0)
             fin = 32'd0;                             // +0, whatever the signs
         else if (e_out > 12'(DB))
-            fin = sign5 ? NINF : PINF;               // as MMA-Sim for RZ; not observable on Volta
+            fin = sign6 ? NINF : PINF;               // as MMA-Sim for RZ; not observable on Volta
         else if (q[DM])                              // normal (a subnormal can round up into one)
-            fin = (32'(sign5) << (D_F16 != 0 ? 15 : 31))
+            fin = (32'(sign6) << (D_F16 != 0 ? 15 : 31))
                 | (32'(e_field) << DM)
                 | 32'(q[DM-1:0]);
         else
-            fin = (32'(sign5) << (D_F16 != 0 ? 15 : 31)) | 32'(q[DM-1:0]);
-        d6_d = sp5.nan || (sp5.pos_inf && sp5.neg_inf) ? NAN
-             : sp5.pos_inf ? PINF
-             : sp5.neg_inf ? NINF
+            fin = (32'(sign6) << (D_F16 != 0 ? 15 : 31)) | 32'(q[DM-1:0]);
+        d7_d = sp6.nan || (sp6.pos_inf && sp6.neg_inf) ? NAN
+             : sp6.pos_inf ? PINF
+             : sp6.neg_inf ? NINF
              : fin;
     end
-    `TFDPA_STAGE(d, d6_d)
+    `TFDPA_STAGE(d, d7_d)
 
 `undef TFDPA_STAGE
 endmodule

@@ -33,12 +33,12 @@ for spec in "f32.f16.f16.f32 0 0" "f32.f16.f16.f16 1 0" "f16.f16.f16.f16 1 1"; d
     p="-GC_F16=$cf -GD_F16=$df"
     python tools/rtl_vectors.py --variant "$v" --cases "$n" --seed 1 --out "$b/vectors-$v.txt"
     run "$v" "$v-comb" 0 -GPIPE=0 $p
-    run "$v" "$v-pipe" 7 -GPIPE=1 $p
+    run "$v" "$v-pipe" 8 -GPIPE=1 $p
     # Mutants: each must give mismatches, except where noted in tensor-mirror's results
-    run "$v" "$v-F22" 7 -GPIPE=1 $p -GF=22
-    run "$v" "$v-F24" 7 -GPIPE=1 $p -GF=24
-    run "$v" "$v-ROUND_ALIGN" 7 -GPIPE=1 $p +define+MUT_ROUND_ALIGN
-    run "$v" "$v-LAT6" 6 -GPIPE=1 $p
-    if [ "$cf" = 1 ]; then run "$v" "$v-EZERO19" 7 -GPIPE=1 $p -GEZERO=-19; fi
-    if [ "$df" = 1 ]; then run "$v" "$v-RZ_OUT" 7 -GPIPE=1 $p +define+MUT_RZ_OUT; fi
+    run "$v" "$v-F22" 8 -GPIPE=1 $p -GF=22
+    run "$v" "$v-F24" 8 -GPIPE=1 $p -GF=24
+    run "$v" "$v-ROUND_ALIGN" 8 -GPIPE=1 $p +define+MUT_ROUND_ALIGN
+    run "$v" "$v-LAT7" 7 -GPIPE=1 $p
+    if [ "$cf" = 1 ]; then run "$v" "$v-EZERO19" 8 -GPIPE=1 $p -GEZERO=-19; fi
+    if [ "$df" = 1 ]; then run "$v" "$v-RZ_OUT" 8 -GPIPE=1 $p +define+MUT_RZ_OUT; fi
 done

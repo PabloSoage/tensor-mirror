@@ -1,7 +1,7 @@
 // Verilator testbench for rtl/tfdpa_f16.sv: reads vectors from tools/rtl_vectors.py
 // and compares every output bit. Exit status 1 on any mismatch.
 //   tb <vectors.txt> [max mismatches to print]
-// Build with -DTB_LAT=<latency> (0 for PIPE = 0, 7 for PIPE = 1): one case per cycle, and
+// Build with -DTB_LAT=<latency> (0 for PIPE = 0, 8 for PIPE = 1): one case per cycle, and
 // the result of case i is checked LAT cycles later.
 
 #include <cstdint>

@@ -61,7 +61,7 @@ module tm_pl #(
     input  wire         m_axis_tready,
     output wire         m_axis_tlast
 );
-    localparam LATENCY = 7;  // tfdpa_f16 with PIPE = 1
+    localparam LATENCY = 8;  // tfdpa_f16 with PIPE = 1
     localparam F = 23;
 
     // ---- the datapath ----------------------------------------------------------------
