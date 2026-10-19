@@ -1,0 +1,7 @@
+{"dut": "comb", "result": {"cases": 3010, "latency": 0, "mismatches": 0}}
+{"dut": "pipe", "result": {"cases": 3010, "latency": 7, "mismatches": 0}}
+{"dut": "pipe_F22", "result": {"cases": 3010, "latency": 7, "mismatches": 2554}}
+{"dut": "pipe_F24", "result": {"cases": 3010, "latency": 7, "mismatches": 688}}
+{"dut": "pipe_EZERO130", "result": {"cases": 3010, "latency": 7, "mismatches": 0}}
+{"dut": "pipe_ROUND_ALIGN", "result": {"cases": 3010, "latency": 7, "mismatches": 911}}
+{"dut": "pipe_LAT6", "result": {"cases": 3010, "latency": 6, "mismatches": 3006}}
