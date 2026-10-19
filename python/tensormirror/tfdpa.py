@@ -62,24 +62,23 @@ def t_fdpa(p: TFDPA, a: Sequence[int], b: Sequence[int], c: int, fc: Format | No
         mag = abs(sig) << shift if shift >= 0 else abs(sig) >> -shift  # RZ to F bits
         total += -mag if sig < 0 else mag
     d = encode(p.fd, total < 0, abs(total), emax - p.F, p.rounding)
-    return 0 if d == 1 << (p.fd.width - 1) else d  # a zero result is +0
+    return 0 if d == p.fd.sign_bit else d  # a zero result is +0
 
 
 Matrix = Sequence[Sequence[int]]
 
 
+def dot(p: TFDPA, a: Sequence[int], b: Sequence[int], c: int) -> int:
+    """``c + a . b`` for any length: groups of ``L_max`` chained through ``D``'s format."""
+    L = min(len(a), p.L_max)
+    fc = p.fc
+    for k0 in range(0, len(a), L):
+        c = t_fdpa(p, a[k0 : k0 + L], b[k0 : k0 + L], c, fc)
+        fc = p.fd
+    return c
+
+
 def mma(p: TFDPA, A: Matrix, B: Matrix, C: Matrix) -> list[list[int]]:
-    """``D = A @ B + C`` on raw bits; ``K > L_max`` chains groups through ``D``'s format."""
-    m, k, n = len(A), len(A[0]), len(B[0])
-    L = min(k, p.L_max)
-    D = []
-    for i in range(m):
-        row = []
-        for j in range(n):
-            d, fc = C[i][j], p.fc
-            for k0 in range(0, k, L):
-                d = t_fdpa(p, A[i][k0 : k0 + L], [B[kk][j] for kk in range(k0, k0 + L)], d, fc)
-                fc = p.fd
-            row.append(d)
-        D.append(row)
-    return D
+    """``D = A @ B + C`` on raw bits."""
+    cols = [[row[j] for row in B] for j in range(len(B[0]))]
+    return [[dot(p, A[i], cols[j], C[i][j]) for j in range(len(cols))] for i in range(len(A))]

@@ -14,7 +14,7 @@ dependencies = []
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
-mmasim = ["mmasim==2.0.3", "torch>=2.7", "numpy>=1.26"]
+mmasim = ["mmasim @ git+https://github.com/microsoft/MMA-Sim@54294d410024b8afb42af0b90aa37bc0f727c168#subdirectory=src/mmasim", "torch>=2.7", "numpy>=1.26"]
 lint = ["ruff==0.15.8"]
 
 [tool.setuptools.dynamic]

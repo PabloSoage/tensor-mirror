@@ -6,14 +6,17 @@ is not in the paper and comes from MMA-Sim's code (``nv_ptx/sim.py``, commit
 relies on them.
 """
 
-from .formats import BF16, FP16, FP32, Format
+from .formats import BF16, E2M1, E2M3, E3M2, E4M3, E5M2, E8M13, FP16, FP32, TF32, Format
 from .tfdpa import TFDPA
 
 F_BITS = {"Volta": 23, "Turing": 24, "Ampere": 24, "Ada Lovelace": 24,
           "Hopper": 25, "Blackwell": 25, "RTX Blackwell": 25}
 L_MAX_BYTES = {"Volta": 8, "Turing": 16, "Ampere": 16, "Ada Lovelace": 16,
                "Hopper": 32, "Blackwell": 32, "RTX Blackwell": 32}
-FORMATS = {"f16": FP16, "bf16": BF16, "f32": FP32}
+# PTX type -> (format, bytes per element in registers)
+PTX_TYPES = {"f32": (FP32, 4), "tf32": (TF32, 4), "f16": (FP16, 2), "bf16": (BF16, 2),
+             "e5m2": (E5M2, 1), "e4m3": (E4M3, 1), "e3m2": (E3M2, 1), "e2m3": (E2M3, 1), "e2m1": (E2M1, 1)}
+FP8 = {"e5m2", "e4m3"}
 # (C in f16, C in f32); for f32 it is -108 - F [CIT MMA-Sim §4.2]
 E_ZERO = {"Volta": (-20, -131), "Turing": (-21, -132), "Ampere": (-21, -132), "Ada Lovelace": (-21, -132),
           "Hopper": (-21, -133), "Blackwell": (-21, -133), "RTX Blackwell": (-21, -133)}
@@ -25,14 +28,12 @@ def e_zero(arch: str, fc: Format) -> int:
 
 def tfdpa(arch: str, types: str) -> TFDPA:
     """``types`` in PTX order, D.A.B.C, e.g. ``"f32.f16.f16.f32"``."""
-    d, a, b, c = (FORMATS[t] for t in types.split("."))
-    return TFDPA(
-        fa=a,
-        fb=b,
-        fc=c,
-        fd=d,
-        L_max=L_MAX_BYTES[arch] // (a.width // 8),
-        F=F_BITS[arch],
-        rounding="rne" if d is FP16 else "rz",
-        e_zero=e_zero(arch, c),
-    )
+    d, a, b, c = types.split(".")
+    (fa, size), (fb, _), (fc, _), (fd, _) = PTX_TYPES[a], PTX_TYPES[b], PTX_TYPES[c], PTX_TYPES[d]
+    F = F_BITS[arch]
+    if arch == "Ada Lovelace" and a in FP8:  # 13-bit FP8 accumulation [CIT MMA-Sim Table 4]
+        F = 13
+        if fd is FP32:
+            fd = E8M13
+    return TFDPA(fa=fa, fb=fb, fc=fc, fd=fd, L_max=L_MAX_BYTES[arch] // size, F=F,
+                 rounding="rne" if fd is FP16 else "rz", e_zero=e_zero(arch, fc))
