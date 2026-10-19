@@ -1,0 +1,9 @@
+{
+ "arch": "RTX Blackwell",
+ "inst": "m16n8k8.f32.tf32.tf32.f32",
+ "random_tiles": 2048,
+ "scaled_from": 1024,
+ "directed": [],
+ "tiles": 2048,
+ "seed": 1
+}

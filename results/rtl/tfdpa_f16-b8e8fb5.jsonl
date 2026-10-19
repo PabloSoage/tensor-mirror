@@ -1,0 +1,6 @@
+{"variant": "f32.f16.f16.f32", "dut": "f32.f16.f16.f32-comb", "result": {"cases": 1000011, "latency": 0, "mismatches": 0}}
+{"variant": "f32.f16.f16.f32", "dut": "f32.f16.f16.f32-pipe", "result": {"cases": 1000011, "latency": 7, "mismatches": 0}}
+{"variant": "f32.f16.f16.f32", "dut": "f32.f16.f16.f32-F22", "result": {"cases": 1000011, "latency": 7, "mismatches": 856220}}
+{"variant": "f32.f16.f16.f32", "dut": "f32.f16.f16.f32-F24", "result": {"cases": 1000011, "latency": 7, "mismatches": 244290}}
+{"variant": "f32.f16.f16.f32", "dut": "f32.f16.f16.f32-ROUND_ALIGN", "result": {"cases": 1000011, "latency": 7, "mismatches": 317416}}
+{"variant": "f32.f16.f16.f32", "dut": "f32.f16.f16.f32-LAT6", "result": {"cases": 1000011, "latency": 6, "mismatches": 1000008}}
