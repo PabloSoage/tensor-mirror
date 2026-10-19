@@ -28,7 +28,7 @@ def pack(vec, out):
     with open(out, "wb") as f:
         for r in read(vec):
             a, b, c = r[0:4], r[4:8], r[8]
-            f.write(struct.pack("<4H4HI20x", *a, *b, c))
+            f.write(struct.pack("<4H4HI12x", *a, *b, c))
 
 
 def check(vec, res, report=None):

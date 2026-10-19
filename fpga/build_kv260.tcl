@@ -106,9 +106,10 @@ set_property -dict [list \
     CONFIG.PSU__USE__S_AXI_GP2 {1} CONFIG.PSU__SAXIGP2__DATA_WIDTH {128} \
     CONFIG.PSU__FPGA_PL0_ENABLE {1} CONFIG.PSU__USE__IRQ0 {1}] $ps
 set best {}
-foreach src {IOPLL RPLL DPLL} {
-    set_property -dict [list CONFIG.PSU__CRL_APB__PL0_REF_CTRL__SRCSEL $src \
-        CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ $opt(pl_mhz)] $ps
+# not DPLL: it clocks the DDR, and taking it re-derives the DDR timing (CWL) into an invalid one
+foreach src {IOPLL RPLL} {
+    if {[catch {set_property -dict [list CONFIG.PSU__CRL_APB__PL0_REF_CTRL__SRCSEL $src \
+            CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ $opt(pl_mhz)] $ps}]} { continue }
     set a [get_property CONFIG.PSU__CRL_APB__PL0_REF_CTRL__ACT_FREQMHZ $ps]
     if {![llength $best] || abs($a - $opt(pl_mhz)) < abs([lindex $best 1] - $opt(pl_mhz))} { set best [list $src $a] }
 }
