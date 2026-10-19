@@ -1,0 +1,265 @@
+{
+ "arch": "Ampere",
+ "inst": "m8n8k4.f16.f16.f16.f16",
+ "tiles": 4106,
+ "elements": 262784,
+ "gpu_vs_model": 15,
+ "gpu_vs_model_raw_tiles": 5,
+ "gpu_vs_model_scaled_tiles": 10,
+ "gpu_vs_mmasim": null,
+ "model_vs_mmasim": null,
+ "directed": {
+  "e_zero_small_product": {
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_of_tile_ok": true
+  },
+  "e_zero_rne_tie": {
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_of_tile_ok": true
+  },
+  "negative_c_tiny_product": {
+   "gpu": "0xbc00",
+   "model": "0xbc00",
+   "rest_of_tile_ok": true
+  },
+  "positive_c_tiny_negative_product": {
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_of_tile_ok": true
+  },
+  "exact_cancellation": {
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_of_tile_ok": true
+  },
+  "minus_zero_c": {
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_of_tile_ok": true
+  },
+  "subnormal_c": {
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_of_tile_ok": true
+  },
+  "nan_payload": {
+   "gpu": "0x7fff",
+   "model": "0x7fff",
+   "rest_of_tile_ok": true
+  },
+  "inf_minus_inf": {
+   "gpu": "0x7fff",
+   "model": "0x7fff",
+   "rest_of_tile_ok": true
+  },
+  "inf_times_zero": {
+   "gpu": "0x7fff",
+   "model": "0x7fff",
+   "rest_of_tile_ok": true
+  }
+ },
+ "first_mismatches": [
+  {
+   "tile": 30,
+   "i": 7,
+   "j": 0,
+   "a": [
+    "0xd29e",
+    "0xc71f",
+    "0xd18",
+    "0xedfa"
+   ],
+   "b": [
+    "0xdcfd",
+    "0xb300",
+    "0x2323",
+    "0x4186"
+   ],
+   "c": "0xb9c9",
+   "gpu": "0xb8b0",
+   "model": "0xb8b3"
+  },
+  {
+   "tile": 669,
+   "i": 1,
+   "j": 2,
+   "a": [
+    "0x347a",
+    "0x12e1",
+    "0xfa80",
+    "0xb9d9"
+   ],
+   "b": [
+    "0x9e61",
+    "0xd99",
+    "0x3c3c",
+    "0xa952"
+   ],
+   "c": "0xa742",
+   "gpu": "0xfae2",
+   "model": "0xfae1"
+  },
+  {
+   "tile": 673,
+   "i": 0,
+   "j": 1,
+   "a": [
+    "0xcc57",
+    "0x8be6",
+    "0x8dd9",
+    "0x1d1f"
+   ],
+   "b": [
+    "0x103c",
+    "0xecb4",
+    "0x3a46",
+    "0xc34a"
+   ],
+   "c": "0xbc89",
+   "gpu": "0x8ec9",
+   "model": "0x8ec8"
+  },
+  {
+   "tile": 1132,
+   "i": 5,
+   "j": 2,
+   "a": [
+    "0xd2c1",
+    "0x127c",
+    "0xf354",
+    "0x35c8"
+   ],
+   "b": [
+    "0x911f",
+    "0xb339",
+    "0x427d",
+    "0x2cc6"
+   ],
+   "c": "0xed08",
+   "gpu": "0xfa92",
+   "model": "0xfa93"
+  },
+  {
+   "tile": 2034,
+   "i": 6,
+   "j": 0,
+   "a": [
+    "0xcfab",
+    "0xc002",
+    "0x5924",
+    "0x403b"
+   ],
+   "b": [
+    "0xe338",
+    "0x4bab",
+    "0xd92d",
+    "0xc4e5"
+   ],
+   "c": "0xc3d4",
+   "gpu": "0x641a",
+   "model": "0x641b"
+  },
+  {
+   "tile": 2153,
+   "i": 6,
+   "j": 0,
+   "a": [
+    "0xbeec",
+    "0x408e",
+    "0x3853",
+    "0xc783"
+   ],
+   "b": [
+    "0xc44a",
+    "0x4378",
+    "0xc175",
+    "0x424a"
+   ],
+   "c": "0x487d",
+   "gpu": "0xb22a",
+   "model": "0xb229"
+  },
+  {
+   "tile": 2173,
+   "i": 6,
+   "j": 4,
+   "a": [
+    "0xb52e",
+    "0xc0a8",
+    "0xc7bd",
+    "0x4036"
+   ],
+   "b": [
+    "0xbc45",
+    "0x4687",
+    "0xc0e3",
+    "0xb827"
+   ],
+   "c": "0xc1ed",
+   "gpu": "0x1230",
+   "model": "0x122f"
+  },
+  {
+   "tile": 2290,
+   "i": 4,
+   "j": 1,
+   "a": [
+    "0xb57a",
+    "0xbdd7",
+    "0x39ad",
+    "0xc1a5"
+   ],
+   "b": [
+    "0x37e2",
+    "0xc489",
+    "0xbfc6",
+    "0xb7f4"
+   ],
+   "c": "0xc677",
+   "gpu": "0x2208",
+   "model": "0x2207"
+  },
+  {
+   "tile": 2311,
+   "i": 0,
+   "j": 3,
+   "a": [
+    "0x43d9",
+    "0xc63d",
+    "0x3ebf",
+    "0x4352"
+   ],
+   "b": [
+    "0x3771",
+    "0x46bc",
+    "0x4513",
+    "0xb44a"
+   ],
+   "c": "0xc8bc",
+   "gpu": "0xd142",
+   "model": "0xd143"
+  },
+  {
+   "tile": 2491,
+   "i": 7,
+   "j": 1,
+   "a": [
+    "0xbb7c",
+    "0x4133",
+    "0xb4eb",
+    "0x38cb"
+   ],
+   "b": [
+    "0x3721",
+    "0xc550",
+    "0xc279",
+    "0xbaf8"
+   ],
+   "c": "0x4a56",
+   "gpu": "0xbc55",
+   "model": "0xbc54"
+  }
+ ]
+}

@@ -1,0 +1,6 @@
+slurmstepd: info: Setting TMPDIR to /scratch/10867375. Previous errors about TMPDIR can be discarded
+Cuda compilation tools, release 12.9, V12.9.86
+Build cuda_12.9.r12.9/compiler.36037853_0
+name, driver_version, vbios_version, pci.bus_id
+NVIDIA A100-PCIE-40GB, 580.178.04, 92.00.25.00.08, 00000000:17:00.0
+done

@@ -1,0 +1,1 @@
+{"device": "NVIDIA A100-PCIE-40GB", "sm": 80, "instruction": "m16n8k8.f32.f16.f16.f32", "tiles": 4107}

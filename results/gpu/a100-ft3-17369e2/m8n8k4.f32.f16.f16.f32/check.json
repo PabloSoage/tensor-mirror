@@ -1,0 +1,270 @@
+{
+ "arch": "Ampere",
+ "inst": "m8n8k4.f32.f16.f16.f32",
+ "tiles": 4107,
+ "elements": 262848,
+ "gpu_vs_model": 79156,
+ "gpu_vs_model_raw_tiles": 25792,
+ "gpu_vs_model_scaled_tiles": 53363,
+ "gpu_vs_mmasim": null,
+ "model_vs_mmasim": null,
+ "directed": {
+  "discrepancy_example": {
+   "gpu": "0x0",
+   "model": "0xbf000000",
+   "rest_of_tile_ok": false
+  },
+  "e_zero_small_product": {
+   "gpu": "0x33808018",
+   "model": "0x33808018",
+   "rest_of_tile_ok": true
+  },
+  "e_zero_rne_tie": {
+   "gpu": "0x33000020",
+   "model": "0x33000020",
+   "rest_of_tile_ok": true
+  },
+  "negative_c_tiny_product": {
+   "gpu": "0xbf800000",
+   "model": "0xbf800000",
+   "rest_of_tile_ok": true
+  },
+  "positive_c_tiny_negative_product": {
+   "gpu": "0x3f800000",
+   "model": "0x3f800000",
+   "rest_of_tile_ok": true
+  },
+  "exact_cancellation": {
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_of_tile_ok": true
+  },
+  "minus_zero_c": {
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_of_tile_ok": true
+  },
+  "subnormal_c": {
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_of_tile_ok": true
+  },
+  "nan_payload": {
+   "gpu": "0x7fffffff",
+   "model": "0x7fffffff",
+   "rest_of_tile_ok": true
+  },
+  "inf_minus_inf": {
+   "gpu": "0x7fffffff",
+   "model": "0x7fffffff",
+   "rest_of_tile_ok": true
+  },
+  "inf_times_zero": {
+   "gpu": "0x7fffffff",
+   "model": "0x7fffffff",
+   "rest_of_tile_ok": true
+  }
+ },
+ "first_mismatches": [
+  {
+   "tile": 0,
+   "i": 0,
+   "j": 4,
+   "a": [
+    "0x7922",
+    "0x8306",
+    "0xc152",
+    "0xf351"
+   ],
+   "b": [
+    "0x5163",
+    "0x2562",
+    "0xc3c7",
+    "0x2b58"
+   ],
+   "c": "0x45576343",
+   "gpu": "0x49dd8258",
+   "model": "0x49dd8257"
+  },
+  {
+   "tile": 0,
+   "i": 0,
+   "j": 6,
+   "a": [
+    "0x7922",
+    "0x8306",
+    "0xc152",
+    "0xf351"
+   ],
+   "b": [
+    "0x38c2",
+    "0x31ab",
+    "0xb683",
+    "0xd86a"
+   ],
+   "c": "0xb9008590",
+   "gpu": "0x4a02b4e9",
+   "model": "0x4a02b4e8"
+  },
+  {
+   "tile": 0,
+   "i": 0,
+   "j": 7,
+   "a": [
+    "0x7922",
+    "0x8306",
+    "0xc152",
+    "0xf351"
+   ],
+   "b": [
+    "0x1da3",
+    "0x7af5",
+    "0x62af",
+    "0x1568"
+   ],
+   "c": "0x8b0cabdc",
+   "gpu": "0xc5012b66",
+   "model": "0xc5012b65"
+  },
+  {
+   "tile": 0,
+   "i": 1,
+   "j": 0,
+   "a": [
+    "0x8ec",
+    "0x24e7",
+    "0xd2ac",
+    "0xf2da"
+   ],
+   "b": [
+    "0x1e1d",
+    "0x5d6b",
+    "0x682f",
+    "0x5035"
+   ],
+   "c": "0x4565ad4c",
+   "gpu": "0xc90e5005",
+   "model": "0xc90e5004"
+  },
+  {
+   "tile": 0,
+   "i": 1,
+   "j": 6,
+   "a": [
+    "0x8ec",
+    "0x24e7",
+    "0xd2ac",
+    "0xf2da"
+   ],
+   "b": [
+    "0x38c2",
+    "0x31ab",
+    "0xb683",
+    "0xd86a"
+   ],
+   "c": "0xb3dde417",
+   "gpu": "0x49f1f2ce",
+   "model": "0x49f1f2cd"
+  },
+  {
+   "tile": 0,
+   "i": 2,
+   "j": 3,
+   "a": [
+    "0x3fcd",
+    "0x4fd4",
+    "0xde78",
+    "0x6c5f"
+   ],
+   "b": [
+    "0xd2e5",
+    "0x8c52",
+    "0xef56",
+    "0x4891"
+   ],
+   "c": "0xbfe0f201",
+   "gpu": "0x4a404e45",
+   "model": "0x4a404e44"
+  },
+  {
+   "tile": 0,
+   "i": 2,
+   "j": 5,
+   "a": [
+    "0x3fcd",
+    "0x4fd4",
+    "0xde78",
+    "0x6c5f"
+   ],
+   "b": [
+    "0xa31c",
+    "0xb506",
+    "0x777f",
+    "0xe00f"
+   ],
+   "c": "0x2e10b82f",
+   "gpu": "0xcb65714c",
+   "model": "0xcb65714b"
+  },
+  {
+   "tile": 0,
+   "i": 3,
+   "j": 0,
+   "a": [
+    "0x45ee",
+    "0xd3e4",
+    "0x41ca",
+    "0x68c1"
+   ],
+   "b": [
+    "0x1e1d",
+    "0x5d6b",
+    "0x682f",
+    "0x5035"
+   ],
+   "c": "0xb92b5e3",
+   "gpu": "0x47815b6c",
+   "model": "0x47815b6b"
+  },
+  {
+   "tile": 0,
+   "i": 3,
+   "j": 5,
+   "a": [
+    "0x45ee",
+    "0xd3e4",
+    "0x41ca",
+    "0x68c1"
+   ],
+   "b": [
+    "0xa31c",
+    "0xb506",
+    "0x777f",
+    "0xe00f"
+   ],
+   "c": "0x438c4683",
+   "gpu": "0xc98f77c9",
+   "model": "0xc98f77c8"
+  },
+  {
+   "tile": 0,
+   "i": 3,
+   "j": 6,
+   "a": [
+    "0x45ee",
+    "0xd3e4",
+    "0x41ca",
+    "0x68c1"
+   ],
+   "b": [
+    "0x38c2",
+    "0x31ab",
+    "0xb683",
+    "0xd86a"
+   ],
+   "c": "0x28162f2d",
+   "gpu": "0xc8a7e06b",
+   "model": "0xc8a7e06a"
+  }
+ ]
+}

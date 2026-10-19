@@ -1,0 +1,13 @@
+{
+ "arch": "Ampere",
+ "inst": "m16n8k8.f32.bf16.bf16.f32",
+ "tiles": 4096,
+ "elements": 524288,
+ "gpu_vs_model": 0,
+ "gpu_vs_model_raw_tiles": 0,
+ "gpu_vs_model_scaled_tiles": 0,
+ "gpu_vs_mmasim": 0,
+ "model_vs_mmasim": 0,
+ "directed": {},
+ "first_mismatches": []
+}

@@ -43,6 +43,7 @@ def main() -> int:
     ap.add_argument("--F", default="22,23,24,25")
     ap.add_argument("--L", default="1,2,4")
     ap.add_argument("--e-zero", default="")
+    ap.add_argument("--rounding", default="", help="e.g. rz,rne (default: the model's)")
     ap.add_argument("--jobs", type=int, default=12)
     args = ap.parse_args()
     d_dir = pathlib.Path(args.dir)
@@ -54,8 +55,9 @@ def main() -> int:
     a, b, c, d = a[ix], b[ix], c[ix], d[ix]
     base = tfdpa(meta["arch"], ins["types"], ins["shape"])
     ez = [int(x) for x in args.e_zero.split(",")] if args.e_zero else [base.e_zero]
-    grid = [dataclasses.replace(base, L_max=L, F=F, e_zero=e)
-            for L, F, e in itertools.product(map(int, args.L.split(",")), map(int, args.F.split(",")), ez)]
+    rnds = args.rounding.split(",") if args.rounding else [base.rounding]
+    grid = [dataclasses.replace(base, L_max=L, F=F, e_zero=e, rounding=r)
+            for L, F, e, r in itertools.product(map(int, args.L.split(",")), map(int, args.F.split(",")), ez, rnds)]
     with multiprocessing.Pool(args.jobs) as pool:
         counts = pool.map(mismatches, [(p, a, b, c, d) for p in grid])
     print(f"{meta['inst']} on {meta['arch']} model; {c.size} elements from {len(ix)} tiles")

@@ -1,0 +1,9 @@
+{
+ "arch": "Ampere",
+ "inst": "m16n8k4.f32.tf32.tf32.f32",
+ "random_tiles": 4096,
+ "scaled_from": 2048,
+ "directed": [],
+ "tiles": 4096,
+ "seed": 1
+}
