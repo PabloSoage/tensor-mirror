@@ -3,9 +3,9 @@ import struct
 
 import pytest
 
-from tcmirror.arch import tfdpa
-from tcmirror.formats import FP16, FP32, decode, encode
-from tcmirror.tfdpa import t_fdpa
+from tensormirror.arch import tfdpa
+from tensormirror.formats import FP16, FP32, decode, encode
+from tensormirror.tfdpa import t_fdpa
 
 
 def f16(x: float) -> int:

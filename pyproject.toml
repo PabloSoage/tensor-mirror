@@ -1,12 +1,14 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "tcmirror"
+name = "tensor-mirror"
 dynamic = ["version"]
 description = "Bit-exact replicas of GPU tensor-core arithmetic: integer reference models and RTL"
 readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = []
 
@@ -16,11 +18,11 @@ mmasim = ["mmasim==2.0.3", "torch>=2.7", "numpy>=1.26"]
 lint = ["ruff==0.15.8"]
 
 [tool.setuptools.dynamic]
-version = {attr = "tcmirror.__version__"}
+version = {attr = "tensormirror.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["python"]
-include = ["tcmirror*"]
+include = ["tensormirror*"]
 
 [tool.pytest.ini_options]
 testpaths = ["python/tests"]
@@ -35,4 +37,4 @@ target-version = "py311"
 select = ["E", "F", "W", "I", "B", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["tcmirror"]
+known-first-party = ["tensormirror"]

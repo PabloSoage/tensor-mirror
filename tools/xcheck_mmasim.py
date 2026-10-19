@@ -1,4 +1,4 @@
-"""Compare tcmirror's integer T-FDPA with MMA-Sim on random raw bit patterns.
+"""Compare tensor-mirror's integer T-FDPA with MMA-Sim on random raw bit patterns.
 
 Every input word is uniformly random, so NaNs, infinities, subnormals and zeros all
 appear, as in MMA-Sim's own GPU tests. Prints one JSON line per instruction and the
@@ -17,8 +17,8 @@ import numpy as np
 import torch
 from mmasim.nv_ptx import MMA
 
-from tcmirror.arch import tfdpa
-from tcmirror.tfdpa import t_fdpa
+from tensormirror.arch import tfdpa
+from tensormirror.tfdpa import t_fdpa
 
 TORCH = {"f16": (torch.float16, np.uint16), "bf16": (torch.bfloat16, np.uint16), "f32": (torch.float32, np.uint32)}
 
@@ -40,7 +40,7 @@ def main() -> int:
     ap.add_argument("--k", type=int, default=4)
     ap.add_argument("--cases", type=int, default=100_000)
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--mutate", default="", help="override tcmirror's parameters, e.g. F=24,rounding=rne")
+    ap.add_argument("--mutate", default="", help="override the integer model's parameters, e.g. F=24,rounding=rne")
     args = ap.parse_args()
 
     td, ta, tb, tc = args.types.split(".")
@@ -68,10 +68,10 @@ def main() -> int:
 
     print(json.dumps({"arch": args.arch, "types": args.types, "k": args.k, "cases": n, "seed": args.seed,
                       "mutate": args.mutate,
-                      "mismatches": len(bad), "t_mmasim_s": round(t_sim, 1), "t_tcmirror_s": round(t_ref, 1)}))
+                      "mismatches": len(bad), "t_mmasim_s": round(t_sim, 1), "t_model_s": round(t_ref, 1)}))
     for i in bad[:10]:
         print(f"  case {i}: a={[hex(x) for x in a[i]]} b={[hex(x) for x in b[i]]} c={hex(c[i])} "
-              f"mmasim={hex(d_sim[i])} tcmirror={hex(t_fdpa(p, a[i].tolist(), b[i].tolist(), int(c[i])))}")
+              f"mmasim={hex(d_sim[i])} model={hex(t_fdpa(p, a[i].tolist(), b[i].tolist(), int(c[i])))}")
     return 1 if bad else 0
 
 
