@@ -47,7 +47,7 @@ def check(arch: str, inst: str, cases: int, seed: int, mutate: str = "", show: i
     shape, types = inst.split(".", 1)
     td, ta, tb, tc = types.split(".")
     k = int(shape.split("k")[1])
-    p = tfdpa(arch, types)  # the published parameters: this compares with MMA-Sim
+    p = tfdpa(arch, types, shape, measured=False)  # this compares with MMA-Sim
     for kv in filter(None, mutate.split(",")):  # mutants: the check must catch them
         key, v = kv.split("=")
         p = dataclasses.replace(p, **{key: v if key == "rounding" else int(v)})

@@ -41,6 +41,20 @@ def test_turing_runs_volta_m8n8k4_with_volta_sum_width(shape, expected):
     assert as_f32(t_fdpa(p, a, b, f32(2.0**23))) == expected
 
 
+@pytest.mark.parametrize(("byte", "value", "published"), [
+    (0x08, 1.0, 1.0),     # +1.0 in bits 5:2, zero padding: both readings agree
+    (0x02, 0.25, 0.0),    # bits 1:0 are mantissa bits on the GPU; MMA-Sim drops them
+    (0xC9, 1.125, 1.0),   # bits 7:6 are ignored by both
+    (0xF2, -2.5, -2.0),
+])
+def test_f8f6f4_reads_an_e2m1_byte_as_e2m3(byte, value, published):
+    # Measured on an RTX 5070 Ti with a one-hot probe (tools/probe_fp4.py)
+    one_e4m3 = 0x38
+    for measured, want in ((True, value), (False, published)):
+        p = tfdpa("RTX Blackwell", "f32.e2m1.e4m3.f32", "m16n8k32", measured=measured)
+        assert as_f32(t_fdpa(p, [byte] + [0] * 31, [one_e4m3] + [0] * 31, 0)) == want
+
+
 def test_volta_truncates_at_23_bits_and_rounds_toward_zero():
     p = tfdpa("Volta", "f32.f16.f16.f32")
     one = f16(1.0)
