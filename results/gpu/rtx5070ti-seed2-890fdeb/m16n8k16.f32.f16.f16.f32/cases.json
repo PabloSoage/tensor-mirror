@@ -1,0 +1,21 @@
+{
+ "arch": "RTX Blackwell",
+ "inst": "m16n8k16.f32.f16.f16.f32",
+ "random_tiles": 4096,
+ "scaled_from": 2048,
+ "directed": [
+  "discrepancy_example",
+  "e_zero_small_product",
+  "e_zero_rne_tie",
+  "negative_c_tiny_product",
+  "positive_c_tiny_negative_product",
+  "exact_cancellation",
+  "minus_zero_c",
+  "subnormal_c",
+  "nan_payload",
+  "inf_minus_inf",
+  "inf_times_zero"
+ ],
+ "tiles": 4107,
+ "seed": 2
+}
