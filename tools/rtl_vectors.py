@@ -76,7 +76,8 @@ def main() -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w") as f:
         all_cases = list(cases(tfdpa(args.arch, args.variant), args.cases, args.seed))
-        all_cases += [(a, b, c_bits(c, tc)) for _, a, b, c in directed(tc)]
+        L = tfdpa(args.arch, args.variant).L_max
+        all_cases += [(a + [0] * (L - len(a)), b + [0] * (L - len(b)), c_bits(c, tc)) for _, a, b, c in directed(tc)]
         for a, b, c in all_cases:
             d = t_fdpa(p, a, b, c)
             f.write(" ".join(f"{x:x}" for x in [*a, *b, c, d]) + "\n")
