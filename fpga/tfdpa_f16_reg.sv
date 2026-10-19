@@ -18,7 +18,7 @@ module tfdpa_f16_reg #(
     logic [31:0] c_q, d_c;
 
     tfdpa_f16 #(.L(L), .F(F), .C_F16(C_F16), .D_F16(D_F16), .PIPE(PIPE)) u (
-        .clk(clk), .a(a_q), .b(b_q), .c(c_q), .d(d_c));
+        .clk(clk), .ce(1'b1), .a(a_q), .b(b_q), .c(c_q), .d(d_c));
 
     always_ff @(posedge clk) begin
         a_q <= a;

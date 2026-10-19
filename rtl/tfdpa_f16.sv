@@ -11,7 +11,7 @@
 // and (1, 1).
 //
 // PIPE = 0: combinational (clk unused). PIPE = 1: a register after each stage, one result
-// per cycle, LATENCY cycles from a, b, c to d:
+// per cycle while ce is 1, LATENCY cycles from a, b, c to d:
 //   input -> decode -> multiply | max exponent -> align -> sum -> leading one -> output
 
 module tfdpa_f16 #(
@@ -23,6 +23,7 @@ module tfdpa_f16 #(
     parameter int PIPE = 0                           // 0 or 1
 ) (
     input  logic               clk,
+    input  logic               ce,  // PIPE = 1: every stage holds while ce is 0
     input  logic [L-1:0][15:0] a,
     input  logic [L-1:0][15:0] b,
     input  logic [31:0]        c,
@@ -50,7 +51,7 @@ module tfdpa_f16 #(
     } spec_t;
 
     // A stage register: a flop when PIPE, a wire otherwise.
-`define TFDPA_STAGE(q, dd) if (PIPE != 0) begin : g_``q always_ff @(posedge clk) q <= dd; end \
+`define TFDPA_STAGE(q, dd) if (PIPE != 0) begin : g_``q always_ff @(posedge clk) if (ce) q <= dd; end \
                            else begin : g_``q assign q = dd; end
 
     // ---- 0. input ---------------------------------------------------------------------

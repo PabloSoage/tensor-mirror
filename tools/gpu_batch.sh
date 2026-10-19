@@ -14,7 +14,7 @@ gen)
     arch=$1 root=$2 tiles=$3
     shift 3
     for inst in "$@"; do
-        python "$here/gpu_cases.py" gen --arch "$arch" --inst "$inst" --tiles "$tiles" --seed 1 \
+        python "$here/gpu_cases.py" gen --arch "$arch" --inst "$inst" --tiles "$tiles" --seed ${SEED:-1} \
             --out "$root/$inst" > /dev/null
     done
     ;;

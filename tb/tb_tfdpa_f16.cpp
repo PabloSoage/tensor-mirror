@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
 
     // a and b are packed [L-1:0][15:0]; with L = 4 Verilator holds them as a uint64_t
     static_assert(TB_L == 4, "the packing below assumes L = 4");
+    dut->ce = 1;
     dut->clk = 0;
     dut->eval();  // without this the first rising edge is not seen
     for (long j = 0; j < n + TB_LAT; j++) {
