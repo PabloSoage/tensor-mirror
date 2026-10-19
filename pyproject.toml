@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tcmirror"
+dynamic = ["version"]
+description = "Bit-exact replicas of GPU tensor-core arithmetic: integer reference models and RTL"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+mmasim = ["mmasim==2.0.3", "torch>=2.7", "numpy>=1.26"]
+lint = ["ruff==0.15.8"]
+
+[tool.setuptools.dynamic]
+version = {attr = "tcmirror.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["python"]
+include = ["tcmirror*"]
+
+[tool.pytest.ini_options]
+testpaths = ["python/tests"]
+pythonpath = ["python"]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["tcmirror"]

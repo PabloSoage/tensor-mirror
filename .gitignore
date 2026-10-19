@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# CUDA builds
+build/
+*.o
+*.so
+*.ptx
+*.cubin
+*.fatbin
+
+# RTL simulation
+obj_dir/
+sim_build/
+*.vcd
+*.fst
+
+# Vivado
+fpga/build/
+.Xil/
+*.jou
+vivado*.log
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
