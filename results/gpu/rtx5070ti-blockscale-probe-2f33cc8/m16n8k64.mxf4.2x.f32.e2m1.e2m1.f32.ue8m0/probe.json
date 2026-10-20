@@ -1,0 +1,13 @@
+{
+ "inst": "m16n8k64.mxf4.2x.f32.e2m1.e2m1.f32.ue8m0",
+ "tiles": 128,
+ "sf_a": {
+  "as_predicted": 8192,
+  "not": 0
+ },
+ "sf_b": {
+  "as_predicted": 8192,
+  "not": 0
+ },
+ "first_other": []
+}

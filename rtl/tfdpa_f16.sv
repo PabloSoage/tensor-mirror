@@ -193,6 +193,7 @@ module tfdpa_f16 #(
     logic [MW-1:0]      msb5_d, msb5;
     logic               sign5;
     exp_t               emax5;
+    logic signed [12:0] thr5_d, thr5, shsub5_d, shsub5;  // from emax alone, for stage 6
     spec_t              sp5;
 
     always_comb begin
@@ -200,11 +201,17 @@ module tfdpa_f16 #(
         msb5_d = '0;
         for (int i = 0; i < SW - 1; i++)
             if (m5_d[i]) msb5_d = MW'(i);
+        // stage 6's normal/subnormal test (msb + emax - F >= 1 - DB) and subnormal shift
+        // depend on emax only, so they are ready before msb (timing on the KV260)
+        thr5_d = 13'(1 - DB + F) - 13'(emax4);
+        shsub5_d = 13'(1 - DB - DM + F) - 13'(emax4);
     end
     `TFDPA_STAGE(m5, m5_d)
     `TFDPA_STAGE(msb5, msb5_d)
     `TFDPA_STAGE(sign5, sum4[SW-1])
     `TFDPA_STAGE(emax5, emax4)
+    `TFDPA_STAGE(thr5, thr5_d)
+    `TFDPA_STAGE(shsub5, shsub5_d)
     `TFDPA_STAGE(sp5, sp4)
 
     // ---- 6. shift to the output's last place -------------------------------------------------
@@ -221,10 +228,10 @@ module tfdpa_f16 #(
 
     always_comb begin
         e_res_d = 12'(msb5) + 12'(emax5) - 12'(F);
-        if (e_res_d >= 12'(1 - DB))
-            sh = int'(msb5) - DM;                     // normal
+        if (int'(msb5) >= int'(thr5))                // e_res_d >= 1 - DB: normal
+            sh = int'(msb5) - DM;
         else
-            sh = (1 - DB - DM) - (int'(emax5) - F);   // subnormal: units of 2**(1 - DB - DM)
+            sh = int'(shsub5);                        // subnormal: units of 2**(1 - DB - DM)
         q_d = '0;
         rem_d = '0;
         half_d = '0;

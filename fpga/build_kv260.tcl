@@ -194,6 +194,10 @@ open_run synth_1
 reports $opt(out) synth
 if {$opt(stop) ne "synth"} {
     set to [expr {$opt(stop) eq "bitstream" ? "write_bitstream" : "route_design"}]
+    # the default run missed 200 MHz by 68 ps on the first 8-stage build; physical
+    # optimisation after routing as well
+    set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.IS_ENABLED true [get_runs impl_1]
+    set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
     launch_runs impl_1 -to_step $to -jobs $opt(jobs)
     wait_on_run impl_1
     if {[get_property PROGRESS [get_runs impl_1]] ne "100%"} { error "build_kv260.tcl: implementation failed" }

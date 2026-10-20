@@ -1,0 +1,4 @@
+{"inst": "m16n8k32.mxf8f6f4.1x.f32.e4m3.e4m3.f32.ue8m0", "tiles": 256, "sf_a": {"as_predicted": 16384, "not": 0}, "sf_b": {"as_predicted": 16384, "not": 0}, "first_other": []}
+{"inst": "m16n8k64.mxf4.2x.f32.e2m1.e2m1.f32.ue8m0", "tiles": 128, "sf_a": {"as_predicted": 8192, "not": 0}, "sf_b": {"as_predicted": 8192, "not": 0}, "first_other": []}
+{"inst": "m16n8k64.mxf4nvf4.2x.f32.e2m1.e2m1.f32.ue8m0", "tiles": 128, "sf_a": {"as_predicted": 8192, "not": 0}, "sf_b": {"as_predicted": 8192, "not": 0}, "first_other": []}
+{"inst": "m16n8k64.mxf4nvf4.4x.f32.e2m1.e2m1.f32.ue4m3", "tiles": 128, "sf_a": {"as_predicted": 8192, "not": 0}, "sf_b": {"as_predicted": 8192, "not": 0}, "first_other": []}

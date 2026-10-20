@@ -1,0 +1,53 @@
+{
+ "inst": "m16n8k64.mxf4nvf4.4x.f32.e2m1.e2m1.f32.ue4m3",
+ "tiles": 2055,
+ "elements": 263040,
+ "gpu_vs_model": 0,
+ "raw_third": 0,
+ "raw_elements_third": 0,
+ "near_one_third": 0,
+ "gpu_inf": 0,
+ "gpu_max_finite": 0,
+ "gpu_nan": 6119,
+ "mmasim_name": "m16n8k64.block16.f32.e2m1.e2m1.f32.ue4m3",
+ "gpu_vs_mmasim": 0,
+ "model_vs_mmasim": 0,
+ "directed": {
+  "ue4m3_sign_bit": {
+   "gpu": "0x42800000",
+   "model": "0x42800000",
+   "rest_of_tile_ok": true
+  },
+  "ue4m3_neg_zero_scale": {
+   "gpu": "0x3f800000",
+   "model": "0x3f800000",
+   "rest_of_tile_ok": true
+  },
+  "ue4m3_nan": {
+   "gpu": "0x7fffffff",
+   "model": "0x7fffffff",
+   "rest_of_tile_ok": true
+  },
+  "ue4m3_nan_with_sign": {
+   "gpu": "0x7fffffff",
+   "model": "0x7fffffff",
+   "rest_of_tile_ok": true
+  },
+  "ue4m3_zero_scale_c_neg_zero": {
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_of_tile_ok": true
+  },
+  "ue4m3_subnormal_scales": {
+   "gpu": "0x3a400000",
+   "model": "0x3a400000",
+   "rest_of_tile_ok": true
+  },
+  "cancel_to_zero_c_min_subnormal": {
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_of_tile_ok": true
+  }
+ },
+ "first_mismatches": []
+}

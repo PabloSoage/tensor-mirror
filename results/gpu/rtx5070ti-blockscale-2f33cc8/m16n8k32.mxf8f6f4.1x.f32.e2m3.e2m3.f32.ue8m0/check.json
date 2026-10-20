@@ -1,0 +1,43 @@
+{
+ "inst": "m16n8k32.mxf8f6f4.1x.f32.e2m3.e2m3.f32.ue8m0",
+ "tiles": 2053,
+ "elements": 262784,
+ "gpu_vs_model": 0,
+ "raw_third": 0,
+ "raw_elements_third": 0,
+ "near_one_third": 0,
+ "gpu_inf": 11714,
+ "gpu_max_finite": 0,
+ "gpu_nan": 1286,
+ "mmasim_name": "m16n8k32.block32.f32.e2m3.e2m3.f32.ue8m0",
+ "gpu_vs_mmasim": null,
+ "model_vs_mmasim": null,
+ "directed": {
+  "tiny_products_c_zero": {
+   "gpu": "0x10",
+   "model": "0x10",
+   "rest_of_tile_ok": true
+  },
+  "overflow_big_scales": {
+   "gpu": "0x7f800000",
+   "model": "0x7f800000",
+   "rest_of_tile_ok": true
+  },
+  "overflow_just": {
+   "gpu": "0x7f800000",
+   "model": "0x7f800000",
+   "rest_of_tile_ok": true
+  },
+  "nan_scale_a": {
+   "gpu": "0x7fffffff",
+   "model": "0x7fffffff",
+   "rest_of_tile_ok": true
+  },
+  "cancel_to_zero_c_min_subnormal": {
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_of_tile_ok": true
+  }
+ },
+ "first_mismatches": []
+}
