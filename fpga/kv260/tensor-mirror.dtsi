@@ -1,9 +1,12 @@
 /dts-v1/;
 /plugin/;
 
-/* tensor-mirror on the KV260: the PL image, pl_clk0 at 200 MHz (fpga/build_kv260.tcl
+/* tensor-mirror on the KV260: the PL image, pl_clk0 asked at 200 MHz (fpga/build_kv260.tcl
  * pl_mhz; change both together) and tm_pl's AXI4-Lite registers as a UIO device. The
- * AXI DMA (0xA001_0000) is driven from user space through /dev/mem. */
+ * AXI DMA (0xA001_0000) is driven from user space through /dev/mem.
+ * The board's boot firmware fixes IOPLL at 1,499,999,985 Hz, so Linux gives IOPLL/7 =
+ * 214.29 MHz for this rate (IOPLL/8 = 187.5 MHz is the next one down). Re-time the routed
+ * design at the rate the board gives (fpga/sta_rates.tcl) before trusting it. */
 
 &fpga_full {
 	#address-cells = <2>;

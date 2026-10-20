@@ -1,0 +1,11 @@
+{
+ "cases": 1000010,
+ "results": 1000010,
+ "mismatches": {
+  "f32.f16.f16.f32": 0,
+  "f32.f16.f16.f16": 0,
+  "f16.f16.f16.f16": 0
+ },
+ "nonzero_padding": 0,
+ "first_mismatches": []
+}

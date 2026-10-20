@@ -1,0 +1,4 @@
+698670f29045894e49f7f1b895f411671e5dbb4a591db566b0d39ed5ddecc5b8  d187/tensor-mirror.dtbo
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+NAME="Ubuntu"
+5.15.0-1080-xilinx-zynqmp

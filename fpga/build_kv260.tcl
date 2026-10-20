@@ -9,7 +9,9 @@
 #   out=<dir>        where the evidence and the images go [<work>/out]
 #   pl_mhz=<MHz>     pl_clk0 [200]; the PLL that comes closest is used, and what it
 #                    gives goes to <out>/pl_clk.txt. fpga/kv260/tensor-mirror.dtsi sets
-#                    the rate on the board and must match
+#                    the rate on the board and must match. On the KV260 the board
+#                    gives IOPLL (1.5 GHz) / an integer, not what Vivado reports
+#                    (fpga/sta_rates.tcl re-times the routed design at that rate)
 #   stop=synth|route|bitstream [bitstream]
 #   jobs=<n>         [6]
 #
