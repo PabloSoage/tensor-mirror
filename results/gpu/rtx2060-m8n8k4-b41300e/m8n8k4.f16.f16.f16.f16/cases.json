@@ -1,0 +1,20 @@
+{
+ "arch": "Turing",
+ "inst": "m8n8k4.f16.f16.f16.f16",
+ "random_tiles": 16384,
+ "scaled_from": 8192,
+ "directed": [
+  "e_zero_small_product",
+  "e_zero_rne_tie",
+  "negative_c_tiny_product",
+  "positive_c_tiny_negative_product",
+  "exact_cancellation",
+  "minus_zero_c",
+  "subnormal_c",
+  "nan_payload",
+  "inf_minus_inf",
+  "inf_times_zero"
+ ],
+ "tiles": 16394,
+ "seed": 1
+}

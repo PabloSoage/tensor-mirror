@@ -1,0 +1,3 @@
+{"arch": "Turing", "inst": "m8n8k4.f16.f16.f16.f16", "tiles": 16394, "elements": 1049216, "gpu_vs_model": 0, "gpu_vs_model_raw_tiles": 0, "gpu_vs_model_scaled_tiles": 0, "gpu_vs_mmasim": 49, "model_vs_mmasim": 49}
+{"arch": "Turing", "inst": "m8n8k4.f32.f16.f16.f16", "tiles": 16394, "elements": 1049216, "gpu_vs_model": 0, "gpu_vs_model_raw_tiles": 0, "gpu_vs_model_scaled_tiles": 0, "gpu_vs_mmasim": 191055, "model_vs_mmasim": 191055}
+{"arch": "Turing", "inst": "m8n8k4.f32.f16.f16.f32", "tiles": 16395, "elements": 1049280, "gpu_vs_model": 0, "gpu_vs_model_raw_tiles": 0, "gpu_vs_model_scaled_tiles": 0, "gpu_vs_mmasim": 198735, "model_vs_mmasim": 198735}

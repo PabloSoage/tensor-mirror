@@ -1,0 +1,1 @@
+mma_sm70_on_sm75 e96e5dfa669f4fcbc6915fac756289ceaf31887706da8d715d4f2f5ea5f2283d (nvcc 12.9, -O2 -arch=sm_75)

@@ -1,0 +1,703 @@
+{
+ "arch": "Turing",
+ "inst": "m8n8k4.f16.f16.f16.f16",
+ "F": 23,
+ "e_zero": -19,
+ "mismatches": 0,
+ "F_consistent": [
+  23
+ ],
+ "e_zero_consistent": [
+  -19
+ ],
+ "probes": [
+  {
+   "level": "normal",
+   "k": null,
+   "kind": null,
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 1,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 1,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 2,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 2,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 3,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 3,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 4,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 4,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 5,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 5,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 6,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 6,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 7,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 7,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 8,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 8,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 9,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 9,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 10,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 10,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 11,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 11,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 12,
+   "kind": "nn",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 12,
+   "kind": "ns",
+   "gpu": "0x3c01",
+   "model": "0x3c01",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 13,
+   "kind": "nn",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 13,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 14,
+   "kind": "nn",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 14,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 15,
+   "kind": "nn",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 15,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 16,
+   "kind": "nn",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 16,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 17,
+   "kind": "nn",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 17,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 18,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 19,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 19,
+   "kind": "ss",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 20,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 20,
+   "kind": "ss",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 21,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 21,
+   "kind": "ss",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 22,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 22,
+   "kind": "ss",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 23,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 23,
+   "kind": "ss",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 24,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 24,
+   "kind": "ss",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 25,
+   "kind": "ns",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 25,
+   "kind": "ss",
+   "gpu": "0x3c00",
+   "model": "0x3c00",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": null,
+   "kind": null,
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 1,
+   "kind": "nn",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 1,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 2,
+   "kind": "nn",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 2,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 3,
+   "kind": "nn",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 3,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 4,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 5,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 5,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 6,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 6,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 7,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 7,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 8,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 8,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 9,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 9,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 10,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 10,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 11,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 11,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 12,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 12,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 13,
+   "kind": "ns",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 13,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 14,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 15,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 16,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 17,
+   "kind": "ss",
+   "gpu": "0x1",
+   "model": "0x1",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 18,
+   "kind": "ss",
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 19,
+   "kind": "ss",
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 20,
+   "kind": "ss",
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 21,
+   "kind": "ss",
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 22,
+   "kind": "ss",
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 23,
+   "kind": "ss",
+   "gpu": "0x0",
+   "model": "0x0",
+   "rest_zero": true
+  }
+ ]
+}
