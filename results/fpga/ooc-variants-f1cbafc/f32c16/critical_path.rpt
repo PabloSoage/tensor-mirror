@@ -1,9 +1,6 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
 --------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version      : Vivado v.2026.1 (win64) Build 6511674 Tue Jun 16 11:02:23 MDT 2026
-| Date              : Wed Oct 21 16:30:17 2026
-| Host              : (host) running 64-bit major release  (build 9200)
-| Command           : report_timing -max_paths 1 -file build/ooc/f32c16/critical_path.rpt
 | Design            : tfdpa_f16_reg
 | Device            : xck26-sfvc784
 | Speed File        : -2LV  PRODUCTION 1.31 12-08-2025
