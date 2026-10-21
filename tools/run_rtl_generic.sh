@@ -20,11 +20,12 @@ for spec in "$@"; do
     if [ "$arch" = bs ]; then
         st=1 tag=$types
         mapfile -t pr < <(python tools/rtl_params.py bs "$types")
-        python tools/bs_rtl_vectors.py --inst "$types" --cases "$n" --seed 1 --out "$b/vectors-$tag.txt" > /dev/null
+        python tools/bs_rtl_vectors.py --inst "$types" --cases "$n" --seed 1 --out "$b/vectors-$tag.txt" > /dev/null \
+            || exit 2
     else
         mapfile -t pr < <(python tools/rtl_params.py "$arch" "$types" "$shape")
         python tools/rtl_vectors.py --arch "$arch" --variant "$types" --shape "$shape" \
-            --cases "$n" --seed 1 --out "$b/vectors-$tag.txt" > /dev/null
+            --cases "$n" --seed 1 --out "$b/vectors-$tag.txt" > /dev/null || exit 2
     fi
     vtag=$tag  # the vectors keep this name; with XP and SP the results get "-xp", "-sp"
     g=${pr[0]}
