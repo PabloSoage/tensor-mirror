@@ -19,6 +19,9 @@
 // PIPE = 0: combinational (clk unused). PIPE = 1: a register after each stage, one result
 // per cycle while ce is 1, LATENCY cycles from a, b, c to d:
 //   input -> decode -> multiply | max exponent -> align -> sum -> leading one -> shift -> round
+// XP = 1 makes the maximum of the L + 1 exponents and their sum pipelined trees
+// (rtl/pipe_max.sv, rtl/pipe_sum.sv, a register every 2 levels), for large L: LATENCY grows
+// from 8 to 8 + 2 * ($clog2(L + 1) / 2).
 
 module tfdpa #(
     parameter int L = 4,        // terms per group
@@ -32,6 +35,7 @@ module tfdpa #(
     parameter int CE = 8, parameter int CM = 23, parameter int CLSB = 0,
     parameter int DE = 8, parameter int DM = 23, parameter int DLSB = 0,
     parameter int ST = 0,       // 1: block-scaled (sfa, sfb)
+    parameter int XP = 0,       // 1: the exponent maximum and the sum as pipelined trees
     parameter int PIPE = 0      // 0 or 1
 ) (
     input  logic               clk,
@@ -43,8 +47,13 @@ module tfdpa #(
     input  logic [7:0]         sfb,
     output logic [31:0]        d
 );
+    localparam int N = L + 1;                    // terms: L products and c
+    // with XP, cycles in the exponent-maximum tree and in the adder tree (a register every
+    // 2 of their $clog2(N) levels)
+    localparam int LM = PIPE != 0 && XP != 0 ? $clog2(N) / 2 : 0;
+    localparam int LS = LM;
     /* verilator lint_off UNUSEDPARAM */
-    localparam int LATENCY = PIPE != 0 ? 8 : 0;  // for instantiating code and the testbench
+    localparam int LATENCY = PIPE != 0 ? 8 + LM + LS : 0;  // for instantiating code and the testbench
     /* verilator lint_on UNUSEDPARAM */
     localparam int ABIAS = (1 << (AE - 1)) - 1;
     localparam int BBIAS = (1 << (BE - 1)) - 1;
@@ -53,7 +62,6 @@ module tfdpa #(
     localparam int FP = AM + BM;                 // fractional bits of a product
     localparam int PW = AM + BM + 2;             // bits of a product of two significands
     localparam int W = F + 2;                    // aligned magnitude: every term is < 4
-    localparam int N = L + 1;                    // terms: L products and c
     localparam int SW = W + $clog2(N) + 1;       // signed sum of N terms
     localparam int MW = $clog2(SW);              // bits of a leading-one position
     localparam int XW = 12;                      // signed exponents and shifts
@@ -171,24 +179,40 @@ module tfdpa #(
     logic [N-1:0]        neg2;
     spec_t               sp2;
 
+    // With XP, the maximum is a comparator tree with registers inside (LM cycles), and the
+    // products, exponents and flags wait for it.
+    logic [N-1:0][W-1:0]  magx_d, magx;
+    exp_t [N-1:0]         exx;
+    exp_t                 emaxx;
+    logic [N-1:0]         negx;
+    spec_t                spx;
+
     always_comb begin
         for (int k = 0; k < L; k++) begin
             logic [PW-1:0] p;
             p = PW'(sa1[k]) * PW'(sb1[k]);              // exact
-            mag2_d[k] = W'((PX'(p) << PSHL) >> PSHR);
+            magx_d[k] = W'((PX'(p) << PSHL) >> PSHR);
         end
-        mag2_d[L] = mc1;
-        emax2_d = ex1[0];
-        for (int k = 1; k < N; k++)
-            if (ex1[k] > emax2_d) emax2_d = ex1[k];
+        magx_d[L] = mc1;
+    end
+    pipe_max #(.N(N), .XW(XW), .RE(2), .PIPE(PIPE != 0 && XP != 0 ? 1 : 0)) u_max (
+        .clk(clk), .ce(ce), .x(ex1), .y(emaxx));
+    pipe_delay #(.W(N * W), .D(LM)) u_dmag (.clk(clk), .ce(ce), .x(magx_d), .y(magx));
+    pipe_delay #(.W(N * XW), .D(LM)) u_dex (.clk(clk), .ce(ce), .x(ex1), .y(exx));
+    pipe_delay #(.W(N), .D(LM)) u_dneg (.clk(clk), .ce(ce), .x(neg1), .y(negx));
+    pipe_delay #(.W(3), .D(LM)) u_dsp (.clk(clk), .ce(ce), .x(sp1), .y(spx));
+
+    always_comb begin
+        mag2_d = magx;
+        emax2_d = emaxx;
         for (int k = 0; k < N; k++)
-            sh2_d[k] = XW'(emax2_d - ex1[k]);
+            sh2_d[k] = XW'(emax2_d - exx[k]);
     end
     `TFDPA_STAGE(mag2, mag2_d)
     `TFDPA_STAGE(sh2, sh2_d)
     `TFDPA_STAGE(emax2, emax2_d)
-    `TFDPA_STAGE(neg2, neg1)
-    `TFDPA_STAGE(sp2, sp1)
+    `TFDPA_STAGE(neg2, negx)
+    `TFDPA_STAGE(sp2, spx)
 
     // ---- 3. align at the largest exponent, truncating toward zero -----------------------
     logic [N-1:0][W-1:0] t3_d, t3;
@@ -216,14 +240,28 @@ module tfdpa #(
     exp_t                 emax4;
     spec_t                sp4;
 
-    always_comb begin
-        sum4_d = '0;
-        for (int k = 0; k < N; k++)
-            sum4_d = neg3[k] ? sum4_d - SW'(t3[k]) : sum4_d + SW'(t3[k]);
+    exp_t                 emaxs;
+    spec_t                sps;
+
+    if (XP != 0) begin : g_sum_tree  // an adder tree with registers inside (LS cycles)
+        logic signed [N-1:0][SW-1:0] terms;
+        always_comb
+            for (int k = 0; k < N; k++)
+                terms[k] = neg3[k] ? -SW'(t3[k]) : SW'(t3[k]);
+        pipe_sum #(.N(N), .SW(SW), .RE(2), .PIPE(PIPE)) u_sum (
+            .clk(clk), .ce(ce), .x(terms), .y(sum4_d));
+    end else begin : g_sum_chain
+        always_comb begin
+            sum4_d = '0;
+            for (int k = 0; k < N; k++)
+                sum4_d = neg3[k] ? sum4_d - SW'(t3[k]) : sum4_d + SW'(t3[k]);
+        end
     end
+    pipe_delay #(.W(XW), .D(LS)) u_demax (.clk(clk), .ce(ce), .x(emax3), .y(emaxs));
+    pipe_delay #(.W(3), .D(LS)) u_dsp4 (.clk(clk), .ce(ce), .x(sp3), .y(sps));
     `TFDPA_STAGE(sum4, sum4_d)
-    `TFDPA_STAGE(emax4, emax3)
-    `TFDPA_STAGE(sp4, sp3)
+    `TFDPA_STAGE(emax4, emaxs)
+    `TFDPA_STAGE(sp4, sps)
 
     // ---- 5. magnitude and its leading one ---------------------------------------------------
     logic [SW-2:0]        m5_d, m5;

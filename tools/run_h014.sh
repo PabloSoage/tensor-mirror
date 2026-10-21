@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # H-014: rtl/tfdpa.sv against the integer model in every generation without block scaling.
-#   tools/run_h014.sh [cases]       results in results/rtl/tfdpa-<commit>.jsonl
+#   [XP=1] tools/run_h014.sh [cases]       results in results/rtl/tfdpa-<commit>[-xp].jsonl
 set -u
 cd "$(dirname "$0")/.."
-out=results/rtl/tfdpa-$(git rev-parse --short HEAD).jsonl
+out=results/rtl/tfdpa-$(git rev-parse --short HEAD)$([ "${XP:-0}" = 1 ] && echo -xp).jsonl
 : > "$out"
 bash tools/run_rtl_generic.sh "$out" "${1:-100000}" \
     "Volta|f32.f16.f16.f32|m8n8k4" \

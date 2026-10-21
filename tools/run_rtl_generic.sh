@@ -4,7 +4,7 @@
 # testbench catches mutants (each must give mismatches where its parameter matters).
 #   tools/run_rtl_generic.sh <out.jsonl> <cases> "<arch>|<D.A.B.C>|<shape>[|<mutant EZERO>]" ...
 # A spec "bs|<block_scale instruction>" is a kind::mxf8f6f4 instruction (ST = 1), with the
-# vectors of tools/bs_rtl_vectors.py.
+# vectors of tools/bs_rtl_vectors.py. XP=1 in the environment builds the pipelined trees.
 set -u
 cd "$(dirname "$0")/.."
 out=$1 n=$2
@@ -25,6 +25,7 @@ for spec in "$@"; do
         python tools/rtl_vectors.py --arch "$arch" --variant "$types" --shape "$shape" \
             --cases "$n" --seed 1 --out "$b/vectors-$tag.txt" > /dev/null
     fi
+    vtag=$tag  # the vectors keep this name; with XP the results get "-xp"
     g=${pr[0]}
     read -r L aw bw <<< "${pr[1]}"
     run() {  # name, latency, extra verilator flags...
@@ -33,21 +34,31 @@ for spec in "$@"; do
         verilator --cc --exe --build -O3 -Wall -Wno-UNUSEDSIGNAL \
             --top-module tfdpa -Mdir "$b/$tag-$name" -o tb \
             -CFLAGS "-DTB_LAT=$lat -DTB_L=$L -DTB_AW=$aw -DTB_BW=$bw -DTB_ST=$st -std=c++17" $g "$@" \
+            "$PWD/rtl/pipe_max.sv" "$PWD/rtl/pipe_sum.sv" "$PWD/rtl/pipe_delay.sv" \
             "$PWD/rtl/tfdpa.sv" "$PWD/tb/tb_tfdpa.cpp" > "$b/$tag-$name.log" 2>&1 \
             || { tail -30 "$b/$tag-$name.log"; echo "{\"config\": \"$tag\", \"dut\": \"$name\", \"build\": \"failed\"}" | tee -a "$out"; return; }
-        r=$("$b/$tag-$name/tb" "$b/vectors-$tag.txt" 3 2>"$b/$tag-$name.err")
+        r=$("$b/$tag-$name/tb" "$b/vectors-$vtag.txt" 3 2>"$b/$tag-$name.err")
         echo "{\"config\": \"$tag\", \"dut\": \"$name\", \"result\": $r}" | tee -a "$out"
     }
     F=$(echo "$g" | grep -o 'GF=[0-9]*' | cut -d= -f2)
     rne=$(echo "$g" | grep -o 'GRNE=[0-9]' | cut -d= -f2)
-    run comb 0 -GPIPE=0
-    run pipe 8 -GPIPE=1
+    xp=${XP:-0}
+    lat=8
+    if [ "$xp" = 1 ]; then  # tfdpa's LATENCY: 8 + 2 * ($clog2(L + 1) / 2)
+        d=0
+        while [ $((1 << d)) -lt $((L + 1)) ]; do d=$((d + 1)); done
+        lat=$((8 + 2 * (d / 2)))
+        tag=$tag-xp
+    fi
+    p="-GPIPE=1 -GXP=$xp"
+    run comb 0 -GPIPE=0 -GXP=$xp
+    run pipe $lat $p
     [ "${MUTANTS:-1}" = 1 ] || continue
-    run "F$((F - 1))" 8 -GPIPE=1 -GF=$((F - 1))
-    run "F$((F + 1))" 8 -GPIPE=1 -GF=$((F + 1))
-    run ROUND_ALIGN 8 -GPIPE=1 +define+MUT_ROUND_ALIGN
-    run LAT7 7 -GPIPE=1
-    if [ "$rne" = 1 ]; then run RZ_OUT 8 -GPIPE=1 +define+MUT_RZ_OUT; fi
-    if [ -n "${ezmut:-}" ]; then run "EZERO$ezmut" 8 -GPIPE=1 -GEZERO=$ezmut; fi
-    if [ "$st" = 1 ]; then run ST_NOSCALE 8 -GPIPE=1 +define+MUT_ST_NOSCALE; fi
+    run "F$((F - 1))" $lat $p -GF=$((F - 1))
+    run "F$((F + 1))" $lat $p -GF=$((F + 1))
+    run ROUND_ALIGN $lat $p +define+MUT_ROUND_ALIGN
+    run "LAT$((lat - 1))" $((lat - 1)) $p
+    if [ "$rne" = 1 ]; then run RZ_OUT $lat $p +define+MUT_RZ_OUT; fi
+    if [ -n "${ezmut:-}" ]; then run "EZERO$ezmut" $lat $p -GEZERO=$ezmut; fi
+    if [ "$st" = 1 ]; then run ST_NOSCALE $lat $p +define+MUT_ST_NOSCALE; fi
 done

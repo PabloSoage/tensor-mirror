@@ -9,7 +9,8 @@ file mkdir $out
 set generics [list -generic PIPE=1]
 foreach {n v} [lrange $argv 2 end] { lappend generics -generic "$n=$v" }
 
-read_verilog -sv $here/../rtl/tfdpa.sv
+read_verilog -sv [list $here/../rtl/pipe_max.sv $here/../rtl/pipe_sum.sv $here/../rtl/pipe_delay.sv \
+    $here/../rtl/tfdpa.sv]
 synth_design -top tfdpa -part xck26-sfvc784-2LV-c -mode out_of_context {*}$generics
 create_clock -name clk -period $period [get_ports clk]
 opt_design
