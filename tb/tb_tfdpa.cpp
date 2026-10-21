@@ -3,7 +3,8 @@
 //   tb <vectors.txt> [max mismatches to print]
 // Build with -DTB_L=<terms> -DTB_AW=<A word bits> -DTB_BW=<B word bits> (tools/rtl_params.py)
 // and -DTB_LAT=<latency> (0 for PIPE = 0, 8 for PIPE = 1): one case per cycle, and the
-// result of case i is checked LAT cycles later.
+// result of case i is checked LAT cycles later. With -DTB_ST (ST = 1) each line also has
+// sfa and sfb after c: a[0..L-1] b[0..L-1] c sfa sfb d.
 
 #include <cstdint>
 #include <cstdio>
@@ -26,9 +27,12 @@
 #ifndef TB_LAT
 #define TB_LAT 0
 #endif
+#ifndef TB_ST
+#define TB_ST 0
+#endif
 
 struct Case {
-    unsigned a[TB_L], b[TB_L], c, d;
+    unsigned a[TB_L], b[TB_L], c, sfa, sfb, d;
 };
 
 // Packs x[0..L-1], w bits each, into a packed [L-1:0][w-1:0] port: an integer up to 64
@@ -63,8 +67,11 @@ int main(int argc, char **argv) {
         int got = 0;
         for (int k = 0; k < TB_L; k++) got += fscanf(f, "%x", &x.a[k]);
         for (int k = 0; k < TB_L; k++) got += fscanf(f, "%x", &x.b[k]);
-        got += fscanf(f, "%x %x", &x.c, &x.d);
-        if (got != 2 * TB_L + 2) break;
+        got += fscanf(f, "%x", &x.c);
+        x.sfa = x.sfb = 0;
+        if (TB_ST) got += fscanf(f, "%x %x", &x.sfa, &x.sfb);
+        got += fscanf(f, "%x", &x.d);
+        if (got != 2 * TB_L + 2 + (TB_ST ? 2 : 0)) break;
         cases.push_back(x);
     }
     fclose(f);
@@ -94,6 +101,8 @@ int main(int argc, char **argv) {
         put(dut->a, in ? cases[j].a : zeros, TB_AW);
         put(dut->b, in ? cases[j].b : zeros, TB_BW);
         dut->c = in ? cases[j].c : 0;
+        dut->sfa = in ? cases[j].sfa : 0;
+        dut->sfb = in ? cases[j].sfb : 0;
         if (TB_LAT == 0) {
             if (!in) break;
             dut->eval();

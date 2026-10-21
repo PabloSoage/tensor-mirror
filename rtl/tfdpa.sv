@@ -6,6 +6,11 @@
 // the formats of python/tensormirror/formats.py; one set of parameters is one instruction of
 // python/tensormirror/arch.py. rtl/tfdpa_f16.sv is the same datapath fixed to Volta's f16.
 //
+// ST = 1 makes it MMA-Sim's ST-FDPA (RTX Blackwell mma.block_scale, kind::mxf8f6f4, one
+// UE8M0 scale pair per group; python/tensormirror/blockscale.py st_fdpa): every non-zero
+// product's exponent also gets sfa - 127 + sfb - 127, and a scale of 0xFF is a NaN.
+// With ST = 0, sfa and sfb are ignored.
+//
 // A format is <x>E exponent bits, <x>M mantissa bits, <x>LSB its lowest bit in the word and
 // <x>SPEC its special values: 0 IEEE-like (inf and NaN), 1 NaN only at all ones (OCP E4M3),
 // 2 none (FP6, FP4). A and B words are AW and BW bits wide, c is 32 bits (an f16 c in
@@ -26,6 +31,7 @@ module tfdpa #(
     parameter int BLSB = 0, parameter int BSPEC = 0,
     parameter int CE = 8, parameter int CM = 23, parameter int CLSB = 0,
     parameter int DE = 8, parameter int DM = 23, parameter int DLSB = 0,
+    parameter int ST = 0,       // 1: block-scaled (sfa, sfb)
     parameter int PIPE = 0      // 0 or 1
 ) (
     input  logic               clk,
@@ -33,6 +39,8 @@ module tfdpa #(
     input  logic [L-1:0][AW-1:0] a,
     input  logic [L-1:0][BW-1:0] b,
     input  logic [31:0]        c,
+    input  logic [7:0]         sfa,  // ST = 1: UE8M0 scale factors of this group
+    input  logic [7:0]         sfb,
     output logic [31:0]        d
 );
     /* verilator lint_off UNUSEDPARAM */
@@ -49,6 +57,11 @@ module tfdpa #(
     localparam int SW = W + $clog2(N) + 1;       // signed sum of N terms
     localparam int MW = $clog2(SW);              // bits of a leading-one position
     localparam int XW = 12;                      // signed exponents and shifts
+`ifdef MUT_ST_NOSCALE  // mutant for the testbench: the scales' exponents are not added
+    localparam int STX = 0;
+`else
+    localparam int STX = ST;
+`endif
     // a product or c's significand brought to F fractional bits: shifted left when it has
     // fewer, truncated when it has more (Ada's FP8 sums at F = 13)
     localparam int PX = W > PW ? W : PW;
@@ -73,9 +86,12 @@ module tfdpa #(
     logic [L-1:0][AW-1:0] a0;
     logic [L-1:0][BW-1:0] b0;
     logic [31:0]          c0;
+    logic [7:0]           sfa0, sfb0;
     `TFDPA_STAGE(a0, a)
     `TFDPA_STAGE(b0, b)
     `TFDPA_STAGE(c0, c)
+    `TFDPA_STAGE(sfa0, sfa)
+    `TFDPA_STAGE(sfb0, sfb)
 
     // ---- 1. decode ----------------------------------------------------------------------
     logic [L-1:0][AM:0] sa1_d, sa1;
@@ -87,6 +103,8 @@ module tfdpa #(
 
     always_comb begin
         sp1_d = '0;
+        if (ST != 0 && (sfa0 == 8'hff || sfb0 == 8'hff))
+            sp1_d.nan = 1'b1;
         for (int k = 0; k < L; k++) begin
             logic [AE-1:0] ea;
             logic [BE-1:0] eb;
@@ -117,7 +135,8 @@ module tfdpa #(
             // the product is zero exactly when one operand is (an inf operand's term is
             // never summed: the result is then inf or NaN)
             ex1_d[k] = (a_zero || b_zero) ? exp_t'(EZERO)
-                     : exp_t'((ea == '0 ? 1 : int'(ea)) - ABIAS) + exp_t'((eb == '0 ? 1 : int'(eb)) - BBIAS);
+                     : exp_t'((ea == '0 ? 1 : int'(ea)) - ABIAS) + exp_t'((eb == '0 ? 1 : int'(eb)) - BBIAS)
+                       + (STX != 0 ? exp_t'(int'(sfa0) - 127) + exp_t'(int'(sfb0) - 127) : exp_t'(0));
         end
         begin
             logic [CE-1:0] ec;
