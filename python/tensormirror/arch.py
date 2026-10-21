@@ -46,9 +46,11 @@ def tfdpa(arch: str, types: str, shape: str = "", measured: bool = True) -> TFDP
         # alignment: every e_zero <= -25 matches all the product exponents probed (-14 to
         # -28, tools/probe_ezero.py), and they all give the same bits for f16 operands, whose
         # smallest product exponent is -28. [MED] on an RTX 2060, 2026-10-19
+        # With D in f16 the sum stops at 2**-42, as on the V100 below: only -19 matches
+        # (tools/probe_f16_round.py). [MED] on an RTX 2060, 2026-10-21
         F = 23
         if fc is FP16:
-            ez = -25
+            ez = -19 if fd is FP16 else -25
     if measured and arch == "Volta" and fc is FP16:
         # MMA-Sim has -20 for both outputs; the V100 differs by D. With D in f32 a zero C in
         # f16 drops no product bits (every e_zero <= -25 matches tools/probe_ezero.py); with

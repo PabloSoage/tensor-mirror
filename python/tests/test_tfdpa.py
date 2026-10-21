@@ -83,6 +83,9 @@ def test_volta_zero_c_in_f16_measured():
     assert tfdpa("Volta", "f16.f16.f16.f16").e_zero == -19
     assert tfdpa("Volta", "f32.f16.f16.f16", measured=False).e_zero == -20
     assert tfdpa("Volta", "f32.f16.f16.f32").e_zero == -131
+    # Turing runs Volta's m8n8k4 the same way (H-006, addendum B)
+    assert tfdpa("Turing", "f32.f16.f16.f16", "m8n8k4").e_zero == -25
+    assert tfdpa("Turing", "f16.f16.f16.f16", "m8n8k4").e_zero == -19
 
 
 def test_special_values():
