@@ -12,8 +12,9 @@ build() {  # name, extra verilator flags...
     local name=$1
     shift
     verilator --cc --exe --build -O3 -Wall -Wno-UNUSEDSIGNAL --top-module tm_pl \
-        -Mdir "$b/$name" -o tb "$@" "$PWD/rtl/tm_pl.v" "$PWD/rtl/tfdpa_f16.sv" \
-        "$PWD/tb/tb_tm_pl.cpp" > "$b/$name.log" 2>&1 || { cat "$b/$name.log"; exit 2; }
+        -Mdir "$b/$name" -o tb "$@" "$PWD/rtl/tm_pl.v" \
+        "$PWD/rtl/pipe_max.sv" "$PWD/rtl/pipe_sum.sv" "$PWD/rtl/pipe_delay.sv" "$PWD/rtl/tfdpa.sv" \
+        "$PWD/rtl/tfdpa_f16.sv" "$PWD/tb/tb_tm_pl.cpp" > "$b/$name.log" 2>&1 || { cat "$b/$name.log"; exit 2; }
 }
 build tm_pl
 build tm_pl-ALWAYS_READY +define+MUT_ALWAYS_READY

@@ -5,7 +5,8 @@
 #   vivado.bat -mode batch -nojournal -nolog -source fpga/build_kv260.tcl -tclargs key=value ...
 #
 # Keys [defaults]:
-#   work=<dir>       scratch directory, a SHORT path [build/kv260]
+#   work=<dir>       scratch directory [<repo>/build/kv260]; on Windows give a short one,
+#                    or the IP paths pass MAX_PATH
 #   out=<dir>        where the evidence and the images go [<work>/out]
 #   pl_mhz=<MHz>     pl_clk0 [200]; the PLL that comes closest is used, and what it
 #                    gives goes to <out>/pl_clk.txt. fpga/kv260/tensor-mirror.dtsi sets
@@ -41,7 +42,7 @@ foreach a $argv {  ;# cmd splits key=value at '=': both forms give the same pair
     if {[regexp {^([a-z_]+)=(.*)$} $a -> k v]} { lappend pairs $k $v } else { lappend pairs $a }
 }
 foreach {k v} $pairs { set opt($k) $v }
-if {![info exists opt(work)]} { set opt(work) build/kv260 }
+if {![info exists opt(work)]} { set opt(work) $root/build/kv260 }
 if {![info exists opt(out)]} { set opt(out) $opt(work)/out }
 if {[lsearch -exact {synth route bitstream} $opt(stop)] < 0} { error "stop=$opt(stop)" }
 
@@ -95,7 +96,8 @@ proc reports {out stage} {
 create_project -force tensor-mirror $opt(work)/prj -part $part
 set_property board_part $board [current_project]
 set_property target_language Verilog [current_project]
-add_files -norecurse [list [file join $root rtl tm_pl.v] [file join $root rtl tfdpa_f16.sv]]
+add_files -norecurse [list [file join $root rtl tm_pl.v] [file join $root rtl tfdpa_f16.sv] [file join $root rtl tfdpa.sv] \
+    [file join $root rtl pipe_max.sv] [file join $root rtl pipe_sum.sv] [file join $root rtl pipe_delay.sv]]
 update_compile_order -fileset sources_1
 
 # ---- block design ----

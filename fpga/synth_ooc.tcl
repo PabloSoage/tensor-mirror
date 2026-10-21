@@ -8,7 +8,8 @@ set df16 [expr {[llength $argv] > 4 ? [lindex $argv 4] : 0}]
 set here [file dirname [file normalize [info script]]]
 file mkdir $out
 
-read_verilog -sv [list $here/../rtl/tfdpa_f16.sv $here/tfdpa_f16_reg.sv]
+read_verilog -sv [list $here/../rtl/pipe_max.sv $here/../rtl/pipe_sum.sv $here/../rtl/pipe_delay.sv \
+    $here/../rtl/tfdpa.sv $here/../rtl/tfdpa_f16.sv $here/tfdpa_f16_reg.sv]
 synth_design -top tfdpa_f16_reg -part xck26-sfvc784-2LV-c -mode out_of_context \
     -generic PIPE=$pipe -generic C_F16=$cf16 -generic D_F16=$df16
 create_clock -name clk -period $period [get_ports clk]
