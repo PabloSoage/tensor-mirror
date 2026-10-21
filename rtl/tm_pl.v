@@ -12,7 +12,7 @@
 //             tdata[79:64]   d of f16.f16.f16.f16 (C f16, D f16, RNE)
 //             tdata[127:80]  zero
 //           tlast follows the case's tlast.
-//   s_axi   AXI4-Lite registers (32 bits, 4 KB):
+//   s_axi   AXI4-Lite registers (rtl/tm_regs.v), VERSION 1:
 //             0x000 ID       "TMIR" (0x544D4952)      0x004 VERSION  1
 //             0x008 BUILD    the BUILD parameter (a commit, set by the build)
 //             0x00C LATENCY  cycles from a case to its result while nothing stalls
@@ -36,20 +36,20 @@ module tm_pl #(
     input  wire         pl_resetn,
     input  wire [11:0]  s_axi_awaddr,
     input  wire         s_axi_awvalid,
-    output reg          s_axi_awready,
+    output wire         s_axi_awready,
     input  wire [31:0]  s_axi_wdata,
     input  wire [3:0]   s_axi_wstrb,
     input  wire         s_axi_wvalid,
-    output reg          s_axi_wready,
+    output wire         s_axi_wready,
     output wire [1:0]   s_axi_bresp,
-    output reg          s_axi_bvalid,
+    output wire         s_axi_bvalid,
     input  wire         s_axi_bready,
     input  wire [11:0]  s_axi_araddr,
     input  wire         s_axi_arvalid,
-    output reg          s_axi_arready,
-    output reg  [31:0]  s_axi_rdata,
+    output wire         s_axi_arready,
+    output wire [31:0]  s_axi_rdata,
     output wire [1:0]   s_axi_rresp,
-    output reg          s_axi_rvalid,
+    output wire         s_axi_rvalid,
     input  wire         s_axi_rready,
     input  wire [255:0] s_axis_tdata,
     input  wire         s_axis_tvalid,
@@ -99,65 +99,15 @@ module tm_pl #(
     assign m_axis_tdata = {48'd0, d_f16[15:0], d_f32c16, d_f32};
     assign m_axis_tkeep = 16'hffff;
 
-    // ---- counters --------------------------------------------------------------------
-    reg [31:0] cases_in, cases_out, stalls;
-    reg clear;
-    always @(posedge clk) begin
-        if (!pl_resetn || clear) begin
-            cases_in <= 0;
-            cases_out <= 0;
-            stalls <= 0;
-        end else begin
-            if (s_axis_tvalid && s_axis_tready) cases_in <= cases_in + 1;
-            if (m_axis_tvalid && m_axis_tready) cases_out <= cases_out + 1;
-            if (m_axis_tvalid && !m_axis_tready) stalls <= stalls + 1;
-        end
-    end
-
-    // ---- AXI4-Lite: one transaction at a time ----------------------------------------
-    assign s_axi_bresp = 2'b00;
-    assign s_axi_rresp = 2'b00;
-    always @(posedge clk) begin
-        if (!pl_resetn) begin
-            s_axi_awready <= 0;
-            s_axi_wready <= 0;
-            s_axi_bvalid <= 0;
-            s_axi_arready <= 0;
-            s_axi_rvalid <= 0;
-            s_axi_rdata <= 0;
-            clear <= 0;
-        end else begin
-            clear <= 0;
-            // write: take address and data together, answer OKAY
-            s_axi_awready <= 0;
-            s_axi_wready <= 0;
-            if (s_axi_awvalid && s_axi_wvalid && !s_axi_awready && !s_axi_bvalid) begin
-                s_axi_awready <= 1;
-                s_axi_wready <= 1;
-                s_axi_bvalid <= 1;
-                if (s_axi_awaddr[11:2] == 10'h008 && s_axi_wstrb[0] && s_axi_wdata[0]) clear <= 1;
-            end else if (s_axi_bvalid && s_axi_bready) begin
-                s_axi_bvalid <= 0;
-            end
-            // read
-            s_axi_arready <= 0;
-            if (s_axi_arvalid && !s_axi_arready && !s_axi_rvalid) begin
-                s_axi_arready <= 1;
-                s_axi_rvalid <= 1;
-                case (s_axi_araddr[11:2])
-                    10'h000: s_axi_rdata <= 32'h544D4952;
-                    10'h001: s_axi_rdata <= 32'd1;
-                    10'h002: s_axi_rdata <= BUILD;
-                    10'h003: s_axi_rdata <= LATENCY;
-                    10'h004: s_axi_rdata <= F;
-                    10'h005: s_axi_rdata <= cases_in;
-                    10'h006: s_axi_rdata <= cases_out;
-                    10'h007: s_axi_rdata <= stalls;
-                    default: s_axi_rdata <= 32'd0;
-                endcase
-            end else if (s_axi_rvalid && s_axi_rready) begin
-                s_axi_rvalid <= 0;
-            end
-        end
-    end
+    // ---- registers and counters (rtl/tm_regs.v) --------------------------------------
+    tm_regs #(.VERSION(1), .BUILD(BUILD), .LATENCY(LATENCY), .F(F)) u_regs (
+        .clk(clk), .pl_resetn(pl_resetn),
+        .s_axi_awaddr(s_axi_awaddr), .s_axi_awvalid(s_axi_awvalid), .s_axi_awready(s_axi_awready),
+        .s_axi_wdata(s_axi_wdata), .s_axi_wstrb(s_axi_wstrb), .s_axi_wvalid(s_axi_wvalid),
+        .s_axi_wready(s_axi_wready), .s_axi_bresp(s_axi_bresp), .s_axi_bvalid(s_axi_bvalid),
+        .s_axi_bready(s_axi_bready), .s_axi_araddr(s_axi_araddr), .s_axi_arvalid(s_axi_arvalid),
+        .s_axi_arready(s_axi_arready), .s_axi_rdata(s_axi_rdata), .s_axi_rresp(s_axi_rresp),
+        .s_axi_rvalid(s_axi_rvalid), .s_axi_rready(s_axi_rready),
+        .beat_in(s_axis_tvalid && s_axis_tready), .beat_out(m_axis_tvalid && m_axis_tready),
+        .stall(m_axis_tvalid && !m_axis_tready));
 endmodule

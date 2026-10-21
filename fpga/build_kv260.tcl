@@ -1,4 +1,5 @@
-# build_kv260.tcl - the KV260 system around rtl/tm_pl.v, from nothing, in batch mode:
+# build_kv260.tcl - the KV260 system around rtl/tm_pl.v or rtl/tm_pl_x.v, from nothing, in
+# batch mode:
 # block design, synthesis, implementation, bitstream and the .bit.bin for the board's
 # FPGA manager. Tcl only, for Vivado 2026.1 on Windows.
 #
@@ -15,12 +16,16 @@
 #                    (fpga/sta_rates.tcl re-times the routed design at that rate)
 #   stop=synth|route|bitstream [bitstream]
 #   jobs=<n>         [6]
+#   top=tm_pl|tm_pl_x [tm_pl]
+#   generics=<NAME:value,...>  tm_pl_x's parameters (tfdpa's, from tools/rtl_params.py,
+#                    with XP and SP), ':' and ',' because cmd splits arguments at '='
 #
 # The system:
 #   ps     Zynq UltraScale+ MPSoC with the KV260 preset; pl_clk0 clocks the whole PL;
 #          HPM0 (FPD) at 32 bits for AXI4-Lite, HP0 (FPD) at 128 bits for the DMA,
 #          pl_ps_irq0 for its interrupts
-#   tm     tm_pl as a module reference, BUILD = the first 8 hex digits of the commit
+#   tm     tm_pl or tm_pl_x as a module reference, BUILD = the first 8 hex digits of the
+#          commit, and the generics
 #   dma    AXI DMA in simple (register) mode: MM2S 256-bit stream into tm's s_axis,
 #          S2MM 128-bit stream from tm's m_axis, 40-bit addresses, 26-bit lengths
 #   hp0    SmartConnect from the DMA's MM2S and S2MM masters to HP0
@@ -36,7 +41,7 @@ set root [file normalize [file join [file dirname [info script]] ..]]
 set part xck26-sfvc784-2LV-c
 set board xilinx.com:kv260_som:part0:2.0
 
-array set opt {pl_mhz 200 stop bitstream jobs 6}
+array set opt {pl_mhz 200 stop bitstream jobs 6 top tm_pl generics {}}
 set pairs {}
 foreach a $argv {  ;# cmd splits key=value at '=': both forms give the same pairs
     if {[regexp {^([a-z_]+)=(.*)$} $a -> k v]} { lappend pairs $k $v } else { lappend pairs $a }
@@ -45,6 +50,7 @@ foreach {k v} $pairs { set opt($k) $v }
 if {![info exists opt(work)]} { set opt(work) $root/build/kv260 }
 if {![info exists opt(out)]} { set opt(out) $opt(work)/out }
 if {[lsearch -exact {synth route bitstream} $opt(stop)] < 0} { error "stop=$opt(stop)" }
+if {[lsearch -exact {tm_pl tm_pl_x} $opt(top)] < 0} { error "top=$opt(top)" }
 
 # ---- provenance, before anything is written ----
 set rev [string trim [exec git -C $root rev-parse HEAD]]
@@ -56,6 +62,8 @@ puts $fh "vivado [version -short]"
 puts $fh "tensor-mirror $rev[expr {$dirty ? " (dirty: rebuild after commit)" : ""}]"
 puts $fh "part $part"
 puts $fh "pl_mhz $opt(pl_mhz)"
+puts $fh "top $opt(top)"
+puts $fh "generics $opt(generics)"
 puts $fh "date [clock format [clock seconds] -format %Y-%m-%dT%H:%M:%S]"
 close $fh
 
@@ -96,7 +104,8 @@ proc reports {out stage} {
 create_project -force tensor-mirror $opt(work)/prj -part $part
 set_property board_part $board [current_project]
 set_property target_language Verilog [current_project]
-add_files -norecurse [list [file join $root rtl tm_pl.v] [file join $root rtl tfdpa_f16.sv] [file join $root rtl tfdpa.sv] \
+add_files -norecurse [list [file join $root rtl tm_regs.v] [file join $root rtl tm_pl.v] \
+    [file join $root rtl tm_pl_x.v] [file join $root rtl tfdpa_f16.sv] [file join $root rtl tfdpa.sv] \
     [file join $root rtl pipe_max.sv] [file join $root rtl pipe_sum.sv] [file join $root rtl pipe_delay.sv]]
 update_compile_order -fileset sources_1
 
@@ -125,8 +134,13 @@ puts $fh "asked_mhz $opt(pl_mhz)\nsource [lindex $best 0]\nactual_mhz $act"
 close $fh
 puts "build_kv260.tcl: pl_clk0 asked $opt(pl_mhz) MHz, [lindex $best 0] gives $act MHz"
 
-set tm [create_bd_cell -type module -reference tm_pl tm]
+set tm [create_bd_cell -type module -reference $opt(top) tm]
 set_property CONFIG.BUILD [format 0x%08X $build_hash] $tm
+foreach g [split $opt(generics) ,] {
+    if {$g eq ""} { continue }
+    lassign [split $g :] k v
+    set_property -dict [list CONFIG.$k $v] $tm  ;# -dict: a value like -133 is not an option
+}
 
 set clk [get_bd_pins ps/pl_clk0]
 create_bd_cell -type ip -vlnv [ipdef proc_sys_reset] rst
