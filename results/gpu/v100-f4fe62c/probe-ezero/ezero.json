@@ -1,0 +1,150 @@
+{
+ "arch": "Volta",
+ "inst": "m8n8k4.f32.f16.f16.f16",
+ "F": 23,
+ "e_zero_consistent": [
+  -25,
+  -26,
+  -27,
+  -28,
+  -29,
+  -30,
+  -31,
+  -32,
+  -33,
+  -34,
+  -35,
+  -36,
+  -37,
+  -38,
+  -39,
+  -40,
+  -41,
+  -42,
+  -43,
+  -44,
+  -45
+ ],
+ "probes": [
+  {
+   "e_p": -14,
+   "gpu": "0x39000ffc",
+   "value": 0.00012212985893711448,
+   "exact": 0.00012212985893711448,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -15,
+   "gpu": "0x38800ffc",
+   "value": 6.106492946855724e-05,
+   "exact": 6.106492946855724e-05,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -16,
+   "gpu": "0x38000ffc",
+   "value": 3.053246473427862e-05,
+   "exact": 3.053246473427862e-05,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -17,
+   "gpu": "0x37800ffc",
+   "value": 1.526623236713931e-05,
+   "exact": 1.526623236713931e-05,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -18,
+   "gpu": "0x37000ffc",
+   "value": 7.633116183569655e-06,
+   "exact": 7.633116183569655e-06,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -19,
+   "gpu": "0x36800ffc",
+   "value": 3.816558091784827e-06,
+   "exact": 3.816558091784827e-06,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -20,
+   "gpu": "0x36000ffc",
+   "value": 1.9082790458924137e-06,
+   "exact": 1.9082790458924137e-06,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -21,
+   "gpu": "0x35800ffc",
+   "value": 9.541395229462069e-07,
+   "exact": 9.541395229462069e-07,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -22,
+   "gpu": "0x35000ffc",
+   "value": 4.770697614731034e-07,
+   "exact": 4.770697614731034e-07,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -23,
+   "gpu": "0x34800ffc",
+   "value": 2.385348807365517e-07,
+   "exact": 2.385348807365517e-07,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -24,
+   "gpu": "0x34000ffc",
+   "value": 1.1926744036827586e-07,
+   "exact": 1.1926744036827586e-07,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -25,
+   "gpu": "0x33800ffc",
+   "value": 5.963372018413793e-08,
+   "exact": 5.963372018413793e-08,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -26,
+   "gpu": "0x33000ffc",
+   "value": 2.9816860092068964e-08,
+   "exact": 2.9816860092068964e-08,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -27,
+   "gpu": "0x32800ffc",
+   "value": 1.4908430046034482e-08,
+   "exact": 1.4908430046034482e-08,
+   "lost_bits": 0,
+   "rest_zero": true
+  },
+  {
+   "e_p": -28,
+   "gpu": "0x32000ffc",
+   "value": 7.454215023017241e-09,
+   "exact": 7.454215023017241e-09,
+   "lost_bits": 0,
+   "rest_zero": true
+  }
+ ]
+}

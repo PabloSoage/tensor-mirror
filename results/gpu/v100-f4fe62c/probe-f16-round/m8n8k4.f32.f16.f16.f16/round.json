@@ -1,0 +1,740 @@
+{
+ "arch": "Volta",
+ "inst": "m8n8k4.f32.f16.f16.f16",
+ "F": 23,
+ "e_zero": -25,
+ "mismatches": 0,
+ "F_consistent": [
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40
+ ],
+ "e_zero_consistent": [
+  -25,
+  -26,
+  -27,
+  -28,
+  -29,
+  -30,
+  -31,
+  -32,
+  -33,
+  -34,
+  -35,
+  -36,
+  -37,
+  -38,
+  -39,
+  -40,
+  -41,
+  -42,
+  -43,
+  -44,
+  -45
+ ],
+ "probes": [
+  {
+   "level": "normal",
+   "k": null,
+   "kind": null,
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 1,
+   "kind": "nn",
+   "gpu": "0x3f801800",
+   "model": "0x3f801800",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 1,
+   "kind": "ns",
+   "gpu": "0x3f801800",
+   "model": "0x3f801800",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 2,
+   "kind": "nn",
+   "gpu": "0x3f801400",
+   "model": "0x3f801400",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 2,
+   "kind": "ns",
+   "gpu": "0x3f801400",
+   "model": "0x3f801400",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 3,
+   "kind": "nn",
+   "gpu": "0x3f801200",
+   "model": "0x3f801200",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 3,
+   "kind": "ns",
+   "gpu": "0x3f801200",
+   "model": "0x3f801200",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 4,
+   "kind": "nn",
+   "gpu": "0x3f801100",
+   "model": "0x3f801100",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 4,
+   "kind": "ns",
+   "gpu": "0x3f801100",
+   "model": "0x3f801100",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 5,
+   "kind": "nn",
+   "gpu": "0x3f801080",
+   "model": "0x3f801080",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 5,
+   "kind": "ns",
+   "gpu": "0x3f801080",
+   "model": "0x3f801080",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 6,
+   "kind": "nn",
+   "gpu": "0x3f801040",
+   "model": "0x3f801040",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 6,
+   "kind": "ns",
+   "gpu": "0x3f801040",
+   "model": "0x3f801040",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 7,
+   "kind": "nn",
+   "gpu": "0x3f801020",
+   "model": "0x3f801020",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 7,
+   "kind": "ns",
+   "gpu": "0x3f801020",
+   "model": "0x3f801020",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 8,
+   "kind": "nn",
+   "gpu": "0x3f801010",
+   "model": "0x3f801010",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 8,
+   "kind": "ns",
+   "gpu": "0x3f801010",
+   "model": "0x3f801010",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 9,
+   "kind": "nn",
+   "gpu": "0x3f801008",
+   "model": "0x3f801008",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 9,
+   "kind": "ns",
+   "gpu": "0x3f801008",
+   "model": "0x3f801008",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 10,
+   "kind": "nn",
+   "gpu": "0x3f801004",
+   "model": "0x3f801004",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 10,
+   "kind": "ns",
+   "gpu": "0x3f801004",
+   "model": "0x3f801004",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 11,
+   "kind": "nn",
+   "gpu": "0x3f801002",
+   "model": "0x3f801002",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 11,
+   "kind": "ns",
+   "gpu": "0x3f801002",
+   "model": "0x3f801002",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 12,
+   "kind": "nn",
+   "gpu": "0x3f801001",
+   "model": "0x3f801001",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 12,
+   "kind": "ns",
+   "gpu": "0x3f801001",
+   "model": "0x3f801001",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 13,
+   "kind": "nn",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 13,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 14,
+   "kind": "nn",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 14,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 15,
+   "kind": "nn",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 15,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 16,
+   "kind": "nn",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 16,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 17,
+   "kind": "nn",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 17,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 18,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 19,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 19,
+   "kind": "ss",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 20,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 20,
+   "kind": "ss",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 21,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 21,
+   "kind": "ss",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 22,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 22,
+   "kind": "ss",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 23,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 23,
+   "kind": "ss",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 24,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 24,
+   "kind": "ss",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 25,
+   "kind": "ns",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "normal",
+   "k": 25,
+   "kind": "ss",
+   "gpu": "0x3f801000",
+   "model": "0x3f801000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": null,
+   "kind": null,
+   "gpu": "0x33000000",
+   "model": "0x33000000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 1,
+   "kind": "nn",
+   "gpu": "0x33400000",
+   "model": "0x33400000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 1,
+   "kind": "ns",
+   "gpu": "0x33400000",
+   "model": "0x33400000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 2,
+   "kind": "nn",
+   "gpu": "0x33200000",
+   "model": "0x33200000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 2,
+   "kind": "ns",
+   "gpu": "0x33200000",
+   "model": "0x33200000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 3,
+   "kind": "nn",
+   "gpu": "0x33100000",
+   "model": "0x33100000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 3,
+   "kind": "ns",
+   "gpu": "0x33100000",
+   "model": "0x33100000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 4,
+   "kind": "ns",
+   "gpu": "0x33080000",
+   "model": "0x33080000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 5,
+   "kind": "ns",
+   "gpu": "0x33040000",
+   "model": "0x33040000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 5,
+   "kind": "ss",
+   "gpu": "0x33040000",
+   "model": "0x33040000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 6,
+   "kind": "ns",
+   "gpu": "0x33020000",
+   "model": "0x33020000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 6,
+   "kind": "ss",
+   "gpu": "0x33020000",
+   "model": "0x33020000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 7,
+   "kind": "ns",
+   "gpu": "0x33010000",
+   "model": "0x33010000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 7,
+   "kind": "ss",
+   "gpu": "0x33010000",
+   "model": "0x33010000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 8,
+   "kind": "ns",
+   "gpu": "0x33008000",
+   "model": "0x33008000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 8,
+   "kind": "ss",
+   "gpu": "0x33008000",
+   "model": "0x33008000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 9,
+   "kind": "ns",
+   "gpu": "0x33004000",
+   "model": "0x33004000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 9,
+   "kind": "ss",
+   "gpu": "0x33004000",
+   "model": "0x33004000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 10,
+   "kind": "ns",
+   "gpu": "0x33002000",
+   "model": "0x33002000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 10,
+   "kind": "ss",
+   "gpu": "0x33002000",
+   "model": "0x33002000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 11,
+   "kind": "ns",
+   "gpu": "0x33001000",
+   "model": "0x33001000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 11,
+   "kind": "ss",
+   "gpu": "0x33001000",
+   "model": "0x33001000",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 12,
+   "kind": "ns",
+   "gpu": "0x33000800",
+   "model": "0x33000800",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 12,
+   "kind": "ss",
+   "gpu": "0x33000800",
+   "model": "0x33000800",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 13,
+   "kind": "ns",
+   "gpu": "0x33000400",
+   "model": "0x33000400",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 13,
+   "kind": "ss",
+   "gpu": "0x33000400",
+   "model": "0x33000400",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 14,
+   "kind": "ss",
+   "gpu": "0x33000200",
+   "model": "0x33000200",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 15,
+   "kind": "ss",
+   "gpu": "0x33000100",
+   "model": "0x33000100",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 16,
+   "kind": "ss",
+   "gpu": "0x33000080",
+   "model": "0x33000080",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 17,
+   "kind": "ss",
+   "gpu": "0x33000040",
+   "model": "0x33000040",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 18,
+   "kind": "ss",
+   "gpu": "0x33000020",
+   "model": "0x33000020",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 19,
+   "kind": "ss",
+   "gpu": "0x33000010",
+   "model": "0x33000010",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 20,
+   "kind": "ss",
+   "gpu": "0x33000008",
+   "model": "0x33000008",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 21,
+   "kind": "ss",
+   "gpu": "0x33000004",
+   "model": "0x33000004",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 22,
+   "kind": "ss",
+   "gpu": "0x33000002",
+   "model": "0x33000002",
+   "rest_zero": true
+  },
+  {
+   "level": "subnormal",
+   "k": 23,
+   "kind": "ss",
+   "gpu": "0x33000001",
+   "model": "0x33000001",
+   "rest_zero": true
+  }
+ ]
+}

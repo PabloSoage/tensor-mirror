@@ -1,0 +1,1 @@
+mma_sm70 d6aef65d31e9e7d7b7d777cc8efcb7cce85b99a26d2ade4ac4b2e089c4911620 (nvcc 12.8 V12.8.93, -O2 -arch=sm_70)
