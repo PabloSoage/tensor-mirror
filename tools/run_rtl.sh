@@ -32,7 +32,7 @@ for spec in "f32.f16.f16.f32 0 0" "f32.f16.f16.f16 1 0" "f16.f16.f16.f16 1 1"; d
     set -- $spec
     v=$1 cf=$2 df=$3
     p="-GC_F16=$cf -GD_F16=$df"
-    python tools/rtl_vectors.py --variant "$v" --cases "$n" --seed 1 --out "$b/vectors-$v.txt"
+    python tools/rtl_vectors.py --variant "$v" --cases "$n" --seed 1 --out "$b/vectors-$v.txt" || exit 2
     run "$v" "$v-comb" 0 -GPIPE=0 $p
     run "$v" "$v-pipe" 8 -GPIPE=1 $p
     # Mutants: each must give mismatches, except where noted in tensor-mirror's results

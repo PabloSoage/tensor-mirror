@@ -14,7 +14,8 @@ mkdir -p $b "$(dirname "$out")"
 for inst in "$@"; do
     nb=$(echo "$inst" | cut -d. -f3 | tr -dc 0-9)
     ue4m3=$([ "${inst##*.}" = ue4m3 ] && echo 1 || echo 0)
-    python tools/bs_rtl_vectors.py --inst "$inst" --cases "$n" --seed 1 --out "$b/vectors-$inst.txt" > /dev/null
+    python tools/bs_rtl_vectors.py --inst "$inst" --cases "$n" --seed 1 --out "$b/vectors-$inst.txt" > /dev/null \
+        || exit 2
     run() {  # name, latency, extra verilator flags...
         local name=$1 lat=$2
         shift 2

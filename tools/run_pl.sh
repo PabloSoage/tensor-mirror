@@ -19,7 +19,7 @@ build() {  # name, extra verilator flags...
 build tm_pl
 build tm_pl-ALWAYS_READY +define+MUT_ALWAYS_READY
 for v in f32.f16.f16.f32 f32.f16.f16.f16 f16.f16.f16.f16; do
-    python tools/pl_vectors.py --source "$v" --cases "$n" --seed 1 --out "$b/vectors-$v.txt"
+    python tools/pl_vectors.py --source "$v" --cases "$n" --seed 1 --out "$b/vectors-$v.txt" || exit 2
     r=$("$b/tm_pl/tb" "$b/vectors-$v.txt" 3 70 70 2>&1)
     s=$?
     echo "$v: $(echo "$r" | tail -1) (exit $s)"
