@@ -1,0 +1,5 @@
+{"config": "m16n8k32.mxf8f6f4.1x.f32.e4m3.e4m3.f32.ue8m0", "dut": "tm_pl_x", "exit": 0, "result": {"cases": 100001, "beats_per_case": 3, "received": 100001, "mismatches": 0, "cycles": 471790, "stalls": 42715, "regs_ok": true}}
+{"config": "m16n8k32.mxf8f6f4.1x.f32.e4m3.e4m3.f32.ue8m0", "dut": "ALWAYS_READY", "exit": 1, "result": {"cases": 100001, "beats_per_case": 3, "received": 90897, "mismatches": 74745, "cycles": 6001060, "stalls": 38753, "regs_ok": false}}
+{"config": "Volta-f16.f16.f16.f16-m8n8k4", "dut": "tm_pl_x", "exit": 0, "result": {"cases": 100010, "beats_per_case": 1, "received": 100010, "mismatches": 0, "cycles": 185615, "stalls": 42561, "regs_ok": true}}
+{"config": "Volta-f16.f16.f16.f16-m8n8k4", "dut": "ALWAYS_READY", "exit": 1, "result": {"cases": 100010, "beats_per_case": 1, "received": 77136, "mismatches": 76054, "cycles": 2001200, "stalls": 32534, "regs_ok": false}}
+{"config": "m16n8k32.mxf8f6f4.1x.f32.e4m3.e4m3.f32.ue8m0", "dut": "tm_pl_x", "vectors": "rtx5070ti-h010", "exit": 0, "result": {"cases": 262784, "beats_per_case": 3, "received": 262784, "mismatches": 0, "cycles": 1238689, "stalls": 112230, "regs_ok": true}}
