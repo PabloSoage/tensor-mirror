@@ -17,8 +17,8 @@
 #   stop=synth|route|bitstream [bitstream]
 #   jobs=<n>         [6]
 #   top=tm_pl|tm_pl_x [tm_pl]
-#   generics=<NAME:value,...>  tm_pl_x's parameters (tfdpa's, from tools/rtl_params.py,
-#                    with XP and SP), ':' and ',' because cmd splits arguments at '='
+#   NAME:value ...   tm_pl_x's parameters (tfdpa's, from tools/rtl_params.py, with XP and
+#                    SP), one argument each: cmd splits arguments at '=' and at ','
 #
 # The system:
 #   ps     Zynq UltraScale+ MPSoC with the KV260 preset; pl_clk0 clocks the whole PL;
@@ -44,7 +44,13 @@ set board xilinx.com:kv260_som:part0:2.0
 array set opt {pl_mhz 200 stop bitstream jobs 6 top tm_pl generics {}}
 set pairs {}
 foreach a $argv {  ;# cmd splits key=value at '=': both forms give the same pairs
-    if {[regexp {^([a-z_]+)=(.*)$} $a -> k v]} { lappend pairs $k $v } else { lappend pairs $a }
+    if {[regexp {^[A-Z][A-Z0-9_]*:-?[0-9]+$} $a]} {
+        lappend opt(generics) $a
+    } elseif {[regexp {^([a-z_]+)=(.*)$} $a -> k v]} {
+        lappend pairs $k $v
+    } else {
+        lappend pairs $a
+    }
 }
 foreach {k v} $pairs { set opt($k) $v }
 if {![info exists opt(work)]} { set opt(work) $root/build/kv260 }
@@ -136,8 +142,7 @@ puts "build_kv260.tcl: pl_clk0 asked $opt(pl_mhz) MHz, [lindex $best 0] gives $a
 
 set tm [create_bd_cell -type module -reference $opt(top) tm]
 set_property CONFIG.BUILD [format 0x%08X $build_hash] $tm
-foreach g [split $opt(generics) ,] {
-    if {$g eq ""} { continue }
+foreach g $opt(generics) {
     lassign [split $g :] k v
     set_property -dict [list CONFIG.$k $v] $tm  ;# -dict: a value like -133 is not an option
 }
