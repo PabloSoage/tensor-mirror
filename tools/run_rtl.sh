@@ -39,6 +39,6 @@ for spec in "f32.f16.f16.f32 0 0" "f32.f16.f16.f16 1 0" "f16.f16.f16.f16 1 1"; d
     run "$v" "$v-F24" 8 -GPIPE=1 $p -GF=24
     run "$v" "$v-ROUND_ALIGN" 8 -GPIPE=1 $p +define+MUT_ROUND_ALIGN
     run "$v" "$v-LAT7" 7 -GPIPE=1 $p
-    if [ "$cf" = 1 ]; then run "$v" "$v-EZERO19" 8 -GPIPE=1 $p -GEZERO=-19; fi
+    if [ "$cf" = 1 ]; then run "$v" "$v-EZERO20" 8 -GPIPE=1 $p -GEZERO=-20; fi  # MMA-Sim's value
     if [ "$df" = 1 ]; then run "$v" "$v-RZ_OUT" 8 -GPIPE=1 $p +define+MUT_RZ_OUT; fi
 done

@@ -20,7 +20,10 @@ module tfdpa_f16 #(
     parameter int F = 23,                            // fractional bits of the fused sum (>= 23)
     parameter int C_F16 = 0,
     parameter int D_F16 = 0,
-    parameter int EZERO = C_F16 != 0 ? -20 : -131,   // exponent given to a zero term (Volta)
+    // exponent given to a zero term, as measured on the V100 (H-002): MMA-Sim has -20 for
+    // C in f16; the GPU keeps every product bit with D in f32 (<= -25) and stops at 2**-42
+    // with D in f16 (-19)
+    parameter int EZERO = C_F16 == 0 ? -131 : D_F16 != 0 ? -19 : -25,
     parameter int PIPE = 0                           // 0 or 1
 ) (
     input  logic               clk,
