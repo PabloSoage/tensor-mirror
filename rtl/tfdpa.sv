@@ -21,7 +21,8 @@
 //   input -> decode -> multiply | max exponent -> align -> sum -> leading one -> shift -> round
 // XP = 1 makes the maximum of the L + 1 exponents and their sum pipelined trees
 // (rtl/pipe_max.sv, rtl/pipe_sum.sv, a register every 2 levels), for large L: LATENCY grows
-// from 8 to 8 + 2 * ($clog2(L + 1) / 2).
+// from 8 to 8 + 2 * ($clog2(L + 1) / 2). SP = 1 puts a register in stage 6, between the
+// shift amount and the shift (one more cycle).
 
 module tfdpa #(
     parameter int L = 4,        // terms per group
@@ -36,6 +37,7 @@ module tfdpa #(
     parameter int DE = 8, parameter int DM = 23, parameter int DLSB = 0,
     parameter int ST = 0,       // 1: block-scaled (sfa, sfb)
     parameter int XP = 0,       // 1: the exponent maximum and the sum as pipelined trees
+    parameter int SP = 0,       // 1: stage 6 split in two
     parameter int PIPE = 0      // 0 or 1
 ) (
     input  logic               clk,
@@ -52,8 +54,9 @@ module tfdpa #(
     // 2 of their $clog2(N) levels)
     localparam int LM = PIPE != 0 && XP != 0 ? $clog2(N) / 2 : 0;
     localparam int LS = LM;
+    localparam int LN = PIPE != 0 && SP != 0 ? 1 : 0;  // with SP, the cycle added in stage 6
     /* verilator lint_off UNUSEDPARAM */
-    localparam int LATENCY = PIPE != 0 ? 8 + LM + LS : 0;  // for instantiating code and the testbench
+    localparam int LATENCY = PIPE != 0 ? 8 + LM + LS + LN : 0;  // for instantiating code and the testbench
     /* verilator lint_on UNUSEDPARAM */
     localparam int ABIAS = (1 << (AE - 1)) - 1;
     localparam int BBIAS = (1 << (BE - 1)) - 1;
@@ -293,9 +296,13 @@ module tfdpa #(
     // The value is m5 * 2**(emax5 - F). It is shifted so that its last kept bit is the
     // output's last place: by sh = top - DM where top is the leading one's position
     // (normal), or to units of 2**(1 - DB - DM) (subnormal). The dropped part (rem) and its
-    // half go to stage 7 with the kept part (q).
-    logic signed [XW:0] e_res_d, e_res;     // exponent of the leading bit, before rounding
-    int                 sh;                 // right shift to the output's last place
+    // half go to stage 7 with the kept part (q). With SP, sh is registered before the shift.
+    logic signed [XW:0] e_res_d, e_resx, e_res;  // exponent of the leading bit, before rounding
+    logic signed [XW:0] sh_d, shx;               // right shift to the output's last place
+    int                 sh;
+    logic [SW-2:0]      m5x;
+    logic               sign5x;
+    spec_t              sp5x;
     logic [SW-1:0]      q_d, q6, rem_d, rem6, half_d, half6;
     logic               zero6;
     logic               sign6;
@@ -304,30 +311,39 @@ module tfdpa #(
     always_comb begin
         e_res_d = (XW + 1)'(msb5) + (XW + 1)'(emax5) - (XW + 1)'(F);
         if (int'(msb5) >= int'(thr5))                // e_res_d >= 1 - DB: normal
-            sh = int'(msb5) - DM;
+            sh_d = (XW + 1)'(msb5) - (XW + 1)'(DM);
         else
-            sh = int'(shsub5);                        // subnormal: units of 2**(1 - DB - DM)
+            sh_d = shsub5;                            // subnormal: units of 2**(1 - DB - DM)
+    end
+    pipe_delay #(.W(XW + 1), .D(LN)) u_dsh (.clk(clk), .ce(ce), .x(sh_d), .y(shx));
+    pipe_delay #(.W(XW + 1), .D(LN)) u_dres (.clk(clk), .ce(ce), .x(e_res_d), .y(e_resx));
+    pipe_delay #(.W(SW - 1), .D(LN)) u_dm5 (.clk(clk), .ce(ce), .x(m5), .y(m5x));
+    pipe_delay #(.W(1), .D(LN)) u_dsign5 (.clk(clk), .ce(ce), .x(sign5), .y(sign5x));
+    pipe_delay #(.W(3), .D(LN)) u_dsp5 (.clk(clk), .ce(ce), .x(sp5), .y(sp5x));
+
+    always_comb begin
+        sh = int'(shx);
         q_d = '0;
         rem_d = '0;
         half_d = '0;
         if (sh <= 0) begin
-            q_d = (-sh < SW) ? SW'(m5) << (-sh) : '0;
+            q_d = (-sh < SW) ? SW'(m5x) << (-sh) : '0;
         end else if (sh < SW) begin
-            q_d = SW'(m5) >> sh;
-            rem_d = SW'(m5) & ((SW'(1) << sh) - SW'(1));
+            q_d = SW'(m5x) >> sh;
+            rem_d = SW'(m5x) & ((SW'(1) << sh) - SW'(1));
             half_d = SW'(1) << (sh - 1);
         end else begin
-            rem_d = SW'(m5);                          // everything is dropped
+            rem_d = SW'(m5x);                         // everything is dropped
             half_d = '1;                              // more than any remainder: never rounds up
         end
     end
     `TFDPA_STAGE(q6, q_d)
     `TFDPA_STAGE(rem6, rem_d)
     `TFDPA_STAGE(half6, half_d)
-    `TFDPA_STAGE(e_res, e_res_d)
-    `TFDPA_STAGE(zero6, m5 == '0)
-    `TFDPA_STAGE(sign6, sign5)
-    `TFDPA_STAGE(sp6, sp5)
+    `TFDPA_STAGE(e_res, e_resx)
+    `TFDPA_STAGE(zero6, m5x == '0)
+    `TFDPA_STAGE(sign6, sign5x)
+    `TFDPA_STAGE(sp6, sp5x)
 
     // ---- 7. round to the output format, special values --------------------------------------
     // RZ drops rem; RNE adds one when it is above half, or exactly half with an odd q.

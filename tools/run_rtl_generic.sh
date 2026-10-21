@@ -4,7 +4,8 @@
 # testbench catches mutants (each must give mismatches where its parameter matters).
 #   tools/run_rtl_generic.sh <out.jsonl> <cases> "<arch>|<D.A.B.C>|<shape>[|<mutant EZERO>]" ...
 # A spec "bs|<block_scale instruction>" is a kind::mxf8f6f4 instruction (ST = 1), with the
-# vectors of tools/bs_rtl_vectors.py. XP=1 in the environment builds the pipelined trees.
+# vectors of tools/bs_rtl_vectors.py. XP=1 in the environment builds the pipelined trees,
+# SP=1 the split stage 6.
 set -u
 cd "$(dirname "$0")/.."
 out=$1 n=$2
@@ -25,7 +26,7 @@ for spec in "$@"; do
         python tools/rtl_vectors.py --arch "$arch" --variant "$types" --shape "$shape" \
             --cases "$n" --seed 1 --out "$b/vectors-$tag.txt" > /dev/null
     fi
-    vtag=$tag  # the vectors keep this name; with XP the results get "-xp"
+    vtag=$tag  # the vectors keep this name; with XP and SP the results get "-xp", "-sp"
     g=${pr[0]}
     read -r L aw bw <<< "${pr[1]}"
     run() {  # name, latency, extra verilator flags...
@@ -50,8 +51,10 @@ for spec in "$@"; do
         lat=$((8 + 2 * (d / 2)))
         tag=$tag-xp
     fi
-    p="-GPIPE=1 -GXP=$xp"
-    run comb 0 -GPIPE=0 -GXP=$xp
+    sp=${SP:-0}
+    if [ "$sp" = 1 ]; then lat=$((lat + 1)) tag=$tag-sp; fi
+    p="-GPIPE=1 -GXP=$xp -GSP=$sp"
+    run comb 0 -GPIPE=0 -GXP=$xp -GSP=$sp
     run pipe $lat $p
     [ "${MUTANTS:-1}" = 1 ] || continue
     run "F$((F - 1))" $lat $p -GF=$((F - 1))
