@@ -21,8 +21,8 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from gpu_cases import c_bits, directed  # noqa: E402
 
-from tensormirror.arch import tfdpa  # noqa: E402
-from tensormirror.formats import FP16, decode, encode  # noqa: E402
+from tensormirror.arch import PTX_TYPES, tfdpa  # noqa: E402
+from tensormirror.formats import FN, FP16, IEEE, decode, encode  # noqa: E402
 from tensormirror.tfdpa import t_fdpa  # noqa: E402
 
 
@@ -33,6 +33,40 @@ def f16_scaled(rng: random.Random, lo: int, hi: int) -> int:
 
 def f32_scaled(rng: random.Random, lo: int, hi: int) -> int:
     return (rng.getrandbits(1) << 31) | (rng.randint(lo, hi) << 23) | rng.getrandbits(23)
+
+
+def scaled_word(rng: random.Random, fmt, lo: int, hi: int) -> int:
+    """A finite value of fmt with a random sign and mantissa and a biased exponent in [lo, hi]."""
+    top = (1 << fmt.ebits) - 1
+    e = min(max(rng.randint(lo, hi), 0), top - 1 if fmt.specials == IEEE else top)
+    m = rng.getrandbits(fmt.mbits)
+    if fmt.specials == FN and e == top and m == (1 << fmt.mbits) - 1:
+        m -= 1  # all ones is NaN
+    v = (rng.getrandbits(1) << (fmt.ebits + fmt.mbits)) | (e << fmt.mbits) | m
+    return (v << fmt.lsb) | rng.getrandbits(fmt.lsb)  # bits below the format: ignored
+
+
+def cases_any(p, n: int, seed: int, aw: int, bw: int, cw: int):
+    """As cases(), for any operand format: raw words, scaled and cancelling sums."""
+    rng = random.Random(seed)
+    L = p.L_max
+    for i in range(n):
+        kind = i % 3
+        if kind == 0:
+            a = [rng.getrandbits(aw) for _ in range(L)]
+            b = [rng.getrandbits(bw) for _ in range(L)]
+            c = rng.getrandbits(cw)
+        else:
+            base = rng.randint(1, max(1, (1 << p.fa.ebits) - 2))
+            a = [scaled_word(rng, p.fa, base - 2, base + 2) for _ in range(L)]
+            b = [scaled_word(rng, p.fb, p.fb.bias - 2, p.fb.bias + 2) for _ in range(L)]
+            e = base - p.fa.bias + p.fc.bias  # c near the products
+            c = scaled_word(rng, p.fc, e - 3, e + 3)
+            if kind == 2:
+                dec = decode(p.fd, t_fdpa(p, a, b, 0))
+                if dec.kind == "num" and dec.sig:
+                    c = encode(p.fc, not dec.neg, dec.sig, dec.exp - p.fd.mbits, "rne")
+        yield a, b, c
 
 
 def cases(p, n: int, seed: int):
@@ -66,12 +100,13 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--variant", default="f32.f16.f16.f32")
     ap.add_argument("--arch", default="Volta")
+    ap.add_argument("--shape", default="")
     ap.add_argument("--cases", type=int, default=100_000)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--mutate", default="", help="model parameter overrides, e.g. F=24 (to test the testbench)")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
-    p = tfdpa(args.arch, args.variant)
+    p = base = tfdpa(args.arch, args.variant, args.shape)
     for kv in filter(None, args.mutate.split(",")):
         k, v = kv.split("=")
         p = dataclasses.replace(p, **{k: v if k == "rounding" else int(v)})
@@ -79,9 +114,15 @@ def main() -> int:
     out = pathlib.Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w") as f:
-        all_cases = list(cases(tfdpa(args.arch, args.variant), args.cases, args.seed))
-        L = tfdpa(args.arch, args.variant).L_max
-        all_cases += [(a + [0] * (L - len(a)), b + [0] * (L - len(b)), c_bits(c, tc)) for _, a, b, c in directed(tc)]
+        _, ta, tb, _ = args.variant.split(".")
+        if base.fa is FP16 and base.fb is FP16:  # Volta's generator, so its vectors stay the same
+            all_cases = list(cases(base, args.cases, args.seed))
+            L = base.L_max
+            all_cases += [(a + [0] * (L - len(a)), b + [0] * (L - len(b)), c_bits(c, tc))
+                          for _, a, b, c in directed(tc)]
+        else:
+            aw, bw = PTX_TYPES[ta][1] * 8, PTX_TYPES[tb][1] * 8
+            all_cases = list(cases_any(base, args.cases, args.seed, aw, bw, 32 if tc == "f32" else 16))
         for a, b, c in all_cases:
             d = t_fdpa(p, a, b, c)
             f.write(" ".join(f"{x:x}" for x in [*a, *b, c, d]) + "\n")
