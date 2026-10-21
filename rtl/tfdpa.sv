@@ -282,7 +282,7 @@ module tfdpa #(
 
     always_comb begin
 `ifdef MUT_RZ_OUT  // mutant: truncate a round-to-nearest output instead of rounding it
-        up = 1'b0;
+        up = RNE != 0 && 1'b0;
 `else
         up = RNE != 0 && (rem6 > half6 || (rem6 == half6 && rem6 != '0 && q6[0]));
 `endif
@@ -290,7 +290,7 @@ module tfdpa #(
         e_out = e_res;
         if (e_res >= (XW + 1)'(1 - DB) && q[DM + 1]) begin  // rounding carried into a new binade
             q = q >> 1;
-            e_out = e_res + 1'sd1;
+            e_out = e_res + (XW + 1)'(1);
         end
         e_field = (e_res >= (XW + 1)'(1 - DB) ? e_out : (XW + 1)'(1 - DB)) + (XW + 1)'(DB);
         if (zero6 || q == '0)
