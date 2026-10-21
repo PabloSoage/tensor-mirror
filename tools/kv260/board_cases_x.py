@@ -1,13 +1,15 @@
 """Laptop side of a board run of tm_pl_x (tools/kv260/tm_run.py on the KV260).
 
     python tools/kv260/board_cases_x.py gpu   <GPU run dir> <vectors.txt>
+    python tools/kv260/board_cases_x.py plain <GPU run dir> <vectors.txt>
     python tools/kv260/board_cases_x.py pack  <vectors.txt> <L> <AW> <BW> <ST> <cases.bin>
     python tools/kv260/board_cases_x.py check <vectors.txt> <L> <ST> <results.bin> [report.json]
 
 The vectors are tb/tb_tfdpa.cpp's lines: a[0..L-1] b[0..L-1] c [sfa sfb] d, in hex.
 ``gpu`` writes them from a kind::mxf8f6f4 run of gpu/mma_block_scale.cu with one scale
 block per row (tools/bs_cases.py: a.bin, b.bin, c.bin, sfa.bin, sfb.bin, d.bin), one line
-per element of D, tile by tile, row by row: d is what the GPU gave. ``pack`` writes tm_pl_x's
+per element of D, tile by tile, row by row: d is what the GPU gave. ``plain`` does the same
+for a run of gpu/mma_sync.cu (tools/gpu_cases.py), whose K must be one group of the unit (L). ``pack`` writes tm_pl_x's
 s_axis beats, NB per case: the case's bits {sfb, sfa, c, b, a} from the lowest, padded with
 zeros to 32 * NB bytes. ``check`` compares every result beat (16 bytes: d and 12 zero bytes)
 with the vectors' d.
@@ -21,6 +23,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+import gpu_cases  # noqa: E402
 from bs_cases import load  # noqa: E402
 
 
@@ -47,6 +50,20 @@ def gpu(run_dir, out):
                     b = " ".join(f"{v:x}" for v in x["b"][t, n])
                     f.write(f"{a} {b} {x['c'][t, r, n]:x} {x['sfa'][t, r, 0]:x} {x['sfb'][t, 0, n]:x} "
                             f"{d[t, r, n]:x}\n")
+
+
+def plain(run_dir, out):
+    run_dir = pathlib.Path(run_dir)
+    meta = json.loads((run_dir / "cases.json").read_text())
+    ins, a, b, c = gpu_cases.load(run_dir, meta)
+    d = np.fromfile(run_dir / "d.bin", gpu_cases.WORD[ins["size"][ins["td"]]]).reshape(c.shape)
+    with open(out, "w") as f:
+        for t in range(meta["tiles"]):
+            for r in range(ins["M"]):
+                ar = " ".join(f"{v:x}" for v in a[t, r])
+                for n in range(ins["N"]):
+                    br = " ".join(f"{v:x}" for v in b[t, n])
+                    f.write(f"{ar} {br} {c[t, r, n]:x} {d[t, r, n]:x}\n")
 
 
 def pack(vec, L, aw, bw, st, out):
@@ -89,8 +106,8 @@ def check(vec, L, st, res, report=None):
 
 if __name__ == "__main__":
     cmd, args = sys.argv[1], sys.argv[2:]
-    if cmd == "gpu":
-        gpu(*args)
+    if cmd in ("gpu", "plain"):
+        (gpu if cmd == "gpu" else plain)(*args)
         sys.exit(0)
     if cmd == "pack":
         pack(args[0], *map(int, args[1:5]), args[5])
