@@ -1,0 +1,13 @@
+pl0_ref 187499999 Hz
+== f32.f16.f16.f32
+build=0x3E535A90 latency=8 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=1000011 per_transfer=1398101
+cases_in=1000011 cases_out=1000011 stalls=2 results=1000011 dma_seconds=0.011 cases_per_second=93556647
+== f32.f16.f16.f16
+build=0x3E535A90 latency=8 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=1000010 per_transfer=1398101
+cases_in=1000010 cases_out=1000010 stalls=2 results=1000010 dma_seconds=0.011 cases_per_second=93550768
+== f16.f16.f16.f16
+build=0x3E535A90 latency=8 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=1000010 per_transfer=1398101
+cases_in=1000010 cases_out=1000010 stalls=2 results=1000010 dma_seconds=0.011 cases_per_second=93537992
+2b9fa84097d70391168b2ec2d2a96a2591f4cea4ade0ee2261198c19b70a1aef  out-187/results-f16.f16.f16.f16.bin
+c2a93bdb9c69be1c4c4913fba9fe76bad0fba3752454e1ca797350d551ea52c5  out-187/results-f32.f16.f16.f16.bin
+813bc8aae6f198c5c730f826d5b5b330be637a4dd8038096e98460d09f364d61  out-187/results-f32.f16.f16.f32.bin
