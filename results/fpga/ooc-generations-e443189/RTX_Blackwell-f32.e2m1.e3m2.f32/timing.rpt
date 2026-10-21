@@ -1,0 +1,471 @@
+------------------------------------------------------------------------------------------------
+| Timer Settings
+| --------------
+------------------------------------------------------------------------------------------------
+
+  Enable Multi Corner Analysis               :  Yes
+  Enable Pessimism Removal                   :  Yes
+  Pessimism Removal Resolution               :  Nearest Common Node
+  Enable Input Delay Default Clock           :  No
+  Enable Preset / Clear Arcs                 :  No
+  Disable Flight Delays                      :  No
+  Ignore I/O Paths                           :  No
+  Timing Early Launch at Borrowing Latches   :  No
+  Borrow Time for Max Delay Exceptions       :  Yes
+  Merge Timing Exceptions                    :  Yes
+  Inter-SLR Compensation                     :  Conservative
+
+  Corner  Analyze    Analyze    
+  Name    Max Paths  Min Paths  
+  ------  ---------  ---------  
+  Slow    Yes        Yes        
+  Fast    Yes        Yes        
+
+
+------------------------------------------------------------------------------------------------
+| Report Methodology
+| ------------------
+------------------------------------------------------------------------------------------------
+
+No report available as report_methodology has not been run prior. Run report_methodology on the current design for the summary of methodology violations.
+
+
+
+check_timing report
+
+Table of Contents
+-----------------
+1. checking no_clock (0)
+2. checking constant_clock (0)
+3. checking pulse_width_clock (0)
+4. checking unconstrained_internal_endpoints (0)
+5. checking no_input_delay (417)
+6. checking no_output_delay (32)
+7. checking multiple_clock (0)
+8. checking generated_clocks (0)
+9. checking loops (0)
+10. checking partial_input_delay (0)
+11. checking partial_output_delay (0)
+12. checking latch_loops (0)
+
+1. checking no_clock (0)
+------------------------
+ There are 0 register/latch pins with no clock.
+
+
+2. checking constant_clock (0)
+------------------------------
+ There are 0 register/latch pins with constant_clock.
+
+
+3. checking pulse_width_clock (0)
+---------------------------------
+ There are 0 register/latch pins which need pulse_width check
+
+
+4. checking unconstrained_internal_endpoints (0)
+------------------------------------------------
+ There are 0 pins that are not constrained for maximum delay.
+
+ There are 0 pins that are not constrained for maximum delay due to constant clock.
+
+
+5. checking no_input_delay (417)
+--------------------------------
+ There are 417 input ports with no input delay specified. (HIGH)
+
+ There are 0 input ports with no input delay but user has a false path constraint.
+
+
+6. checking no_output_delay (32)
+--------------------------------
+ There are 32 ports with no output delay specified. (HIGH)
+
+ There are 0 ports with no output delay but user has a false path constraint
+
+ There are 0 ports with no output delay but with a timing clock defined on it or propagating through it
+
+
+7. checking multiple_clock (0)
+------------------------------
+ There are 0 register/latch pins with multiple clocks.
+
+
+8. checking generated_clocks (0)
+--------------------------------
+ There are 0 generated clocks that are not connected to a clock source.
+
+
+9. checking loops (0)
+---------------------
+ There are 0 combinational loops in the design.
+
+
+10. checking partial_input_delay (0)
+------------------------------------
+ There are 0 input ports with partial input delay specified.
+
+
+11. checking partial_output_delay (0)
+-------------------------------------
+ There are 0 ports with partial output delay specified.
+
+
+12. checking latch_loops (0)
+----------------------------
+ There are 0 combinational latch loops in the design through latch input
+
+
+
+------------------------------------------------------------------------------------------------
+| Design Timing Summary
+| ---------------------
+------------------------------------------------------------------------------------------------
+
+    WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
+    -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
+    -15.474    -6504.690                    513                 3334        0.059        0.000                      0                 3334        1.238        0.000                       0                  2654  
+
+
+Timing constraints are not met.
+
+
+------------------------------------------------------------------------------------------------
+| Clock Summary
+| -------------
+------------------------------------------------------------------------------------------------
+
+Clock  Waveform(ns)         Period(ns)      Frequency(MHz)
+-----  ------------         ----------      --------------
+clk    {0.000 2.000}        4.000           250.000         
+
+
+------------------------------------------------------------------------------------------------
+| Intra Clock Table
+| -----------------
+------------------------------------------------------------------------------------------------
+
+Clock             WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
+-----             -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
+clk               -15.474    -6504.690                    513                 3334        0.059        0.000                      0                 3334        1.238        0.000                       0                  2654  
+
+
+------------------------------------------------------------------------------------------------
+| Inter Clock Table
+| -----------------
+------------------------------------------------------------------------------------------------
+
+From Clock    To Clock          WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints  
+----------    --------          -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------  
+
+
+------------------------------------------------------------------------------------------------
+| Other Path Groups Table
+| -----------------------
+------------------------------------------------------------------------------------------------
+
+Path Group    From Clock    To Clock          WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints  
+----------    ----------    --------          -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------  
+
+
+------------------------------------------------------------------------------------------------
+| Timing Details
+| --------------
+------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clk
+  To Clock:  clk
+
+Setup :          513  Failing Endpoints,  Worst Slack      -15.474ns,  Total Violation    -6504.690ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.059ns,  Total Violation        0.000ns
+PW    :            0  Failing Endpoints,  Worst Slack        1.238ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack (VIOLATED) :        -15.474ns  (required time - arrival time)
+  Source:                 g_ex1.ex1_reg[2][2]/C
+                            (rising edge-triggered cell FDRE clocked by clk  {rise@0.000ns fall@2.000ns period=4.000ns})
+  Destination:            g_sh2.sh2_reg[3][11]/D
+                            (rising edge-triggered cell FDRE clocked by clk  {rise@0.000ns fall@2.000ns period=4.000ns})
+  Path Group:             clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            4.000ns  (clk rise@4.000ns - clk rise@0.000ns)
+  Data Path Delay:        19.470ns  (logic 10.188ns (52.327%)  route 9.282ns (47.673%))
+  Logic Levels:           57  (CARRY8=18 LUT2=4 LUT3=3 LUT4=16 LUT6=16)
+  Clock Path Skew:        -0.013ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.029ns = ( 4.029 - 4.000 ) 
+    Source Clock Delay      (SCD):    0.042ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk rise edge)        0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  clk
+                         net (fo=2653, unset)         0.042     0.042    clk
+    SLICE_X51Y171        FDRE                                         r  g_ex1.ex1_reg[2][2]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X51Y171        FDRE (Prop_EFF2_SLICEL_C_Q)
+                                                      0.116     0.158 r  g_ex1.ex1_reg[2][2]/Q
+                         net (fo=6, routed)           0.228     0.386    g_ex1.ex1_reg[2][2]
+    SLICE_X51Y171        LUT4 (Prop_B6LUT_SLICEL_I3_O)
+                                                      0.138     0.524 r  g_emax3.emax3_reg[7]_srl2_i_618/O
+                         net (fo=1, routed)           0.013     0.537    g_emax3.emax3_reg[7]_srl2_i_618_n_0
+    SLICE_X51Y171        CARRY8 (Prop_CARRY8_SLICEL_S[1]_CO[5])
+                                                      0.273     0.810 r  g_emax3.emax3_reg[7]_srl2_i_538/CO[5]
+                         net (fo=5, routed)           0.278     1.089    g_emax3.emax3_reg[7]_srl2_i_538_n_2
+    SLICE_X50Y169        LUT6 (Prop_B6LUT_SLICEL_I0_O)
+                                                      0.188     1.277 r  g_emax3.emax3_reg[0]_srl2_i_38/O
+                         net (fo=6, routed)           0.110     1.387    g_emax3.emax3_reg[0]_srl2_i_38_n_0
+    SLICE_X50Y170        LUT4 (Prop_A6LUT_SLICEL_I0_O)
+                                                      0.137     1.524 r  g_emax3.emax3_reg[7]_srl2_i_607/O
+                         net (fo=1, routed)           0.014     1.538    g_emax3.emax3_reg[7]_srl2_i_607_n_0
+    SLICE_X50Y170        CARRY8 (Prop_CARRY8_SLICEL_S[0]_CO[5])
+                                                      0.278     1.816 r  g_emax3.emax3_reg[7]_srl2_i_537/CO[5]
+                         net (fo=11, routed)          0.191     2.007    g_emax3.emax3_reg[7]_srl2_i_537_n_2
+    SLICE_X50Y172        LUT6 (Prop_B6LUT_SLICEL_I0_O)
+                                                      0.152     2.159 r  g_emax3.emax3_reg[7]_srl2_i_659/O
+                         net (fo=5, routed)           0.110     2.269    g_emax3.emax3_reg[7]_srl2_i_659_n_0
+    SLICE_X49Y172        LUT4 (Prop_A6LUT_SLICEL_I0_O)
+                                                      0.137     2.406 r  g_emax3.emax3_reg[7]_srl2_i_565/O
+                         net (fo=1, routed)           0.014     2.420    g_emax3.emax3_reg[7]_srl2_i_565_n_0
+    SLICE_X49Y172        CARRY8 (Prop_CARRY8_SLICEL_S[0]_CO[5])
+                                                      0.278     2.698 r  g_emax3.emax3_reg[7]_srl2_i_475/CO[5]
+                         net (fo=16, routed)          0.172     2.870    g_emax3.emax3_reg[7]_srl2_i_475_n_2
+    SLICE_X49Y173        LUT6 (Prop_B6LUT_SLICEL_I4_O)
+                                                      0.138     3.008 r  g_emax3.emax3_reg[7]_srl2_i_567/O
+                         net (fo=20, routed)          0.182     3.190    g_emax3.emax3_reg[7]_srl2_i_567_n_0
+    SLICE_X49Y170        LUT4 (Prop_B6LUT_SLICEL_I2_O)
+                                                      0.138     3.328 r  g_emax3.emax3_reg[7]_srl2_i_533/O
+                         net (fo=1, routed)           0.013     3.341    g_emax3.emax3_reg[7]_srl2_i_533_n_0
+    SLICE_X49Y170        CARRY8 (Prop_CARRY8_SLICEL_S[1]_CO[5])
+                                                      0.273     3.614 f  g_emax3.emax3_reg[7]_srl2_i_467/CO[5]
+                         net (fo=7, routed)           0.295     3.910    g_emax3.emax3_reg[7]_srl2_i_467_n_2
+    SLICE_X50Y168        LUT2 (Prop_A6LUT_SLICEL_I1_O)
+                                                      0.082     3.992 r  g_emax3.emax3_reg[7]_srl2_i_384/O
+                         net (fo=10, routed)          0.189     4.181    g_emax3.emax3_reg[7]_srl2_i_384_n_0
+    SLICE_X51Y168        LUT6 (Prop_A6LUT_SLICEL_I0_O)
+                                                      0.188     4.369 r  g_emax3.emax3_reg[7]_srl2_i_498/O
+                         net (fo=5, routed)           0.168     4.537    g_emax3.emax3_reg[7]_srl2_i_498_n_0
+    SLICE_X51Y165        LUT4 (Prop_A6LUT_SLICEL_I0_O)
+                                                      0.137     4.674 r  g_emax3.emax3_reg[7]_srl2_i_452/O
+                         net (fo=1, routed)           0.014     4.688    g_emax3.emax3_reg[7]_srl2_i_452_n_0
+    SLICE_X51Y165        CARRY8 (Prop_CARRY8_SLICEL_S[0]_CO[5])
+                                                      0.278     4.966 r  g_emax3.emax3_reg[7]_srl2_i_377/CO[5]
+                         net (fo=16, routed)          0.179     5.145    g_emax3.emax3_reg[7]_srl2_i_377_n_2
+    SLICE_X51Y166        LUT6 (Prop_D6LUT_SLICEL_I4_O)
+                                                      0.152     5.297 r  g_emax3.emax3_reg[7]_srl2_i_489/O
+                         net (fo=6, routed)           0.196     5.494    g_emax3.emax3_reg[7]_srl2_i_489_n_0
+    SLICE_X51Y163        LUT4 (Prop_A6LUT_SLICEL_I2_O)
+                                                      0.188     5.682 r  g_emax3.emax3_reg[7]_srl2_i_416/O
+                         net (fo=1, routed)           0.014     5.696    g_emax3.emax3_reg[7]_srl2_i_416_n_0
+    SLICE_X51Y163        CARRY8 (Prop_CARRY8_SLICEL_S[0]_CO[5])
+                                                      0.278     5.974 r  g_emax3.emax3_reg[7]_srl2_i_374/CO[5]
+                         net (fo=12, routed)          0.292     6.265    g_emax3.emax3_reg[7]_srl2_i_374_n_2
+    SLICE_X51Y163        LUT3 (Prop_G5LUT_SLICEL_I1_O)
+                                                      0.090     6.355 r  g_emax3.emax3_reg[2]_srl2_i_32/O
+                         net (fo=1, routed)           0.144     6.499    g_emax3.emax3_reg[2]_srl2_i_32_n_0
+    SLICE_X51Y165        LUT6 (Prop_H6LUT_SLICEL_I5_O)
+                                                      0.153     6.652 r  g_emax3.emax3_reg[2]_srl2_i_25/O
+                         net (fo=6, routed)           0.264     6.916    g_emax3.emax3_reg[2]_srl2_i_25_n_0
+    SLICE_X52Y165        LUT4 (Prop_B6LUT_SLICEL_I2_O)
+                                                      0.083     6.999 r  g_emax3.emax3_reg[7]_srl2_i_372/O
+                         net (fo=1, routed)           0.013     7.012    g_emax3.emax3_reg[7]_srl2_i_372_n_0
+    SLICE_X52Y165        CARRY8 (Prop_CARRY8_SLICEL_S[1]_CO[5])
+                                                      0.273     7.285 r  g_emax3.emax3_reg[7]_srl2_i_300/CO[5]
+                         net (fo=11, routed)          0.334     7.619    g_emax3.emax3_reg[7]_srl2_i_300_n_2
+    SLICE_X49Y165        LUT6 (Prop_H6LUT_SLICEL_I0_O)
+                                                      0.137     7.756 r  g_emax3.emax3_reg[7]_srl2_i_400/O
+                         net (fo=5, routed)           0.069     7.826    g_emax3.emax3_reg[7]_srl2_i_400_n_0
+    SLICE_X49Y165        LUT4 (Prop_B6LUT_SLICEL_I2_O)
+                                                      0.224     8.050 r  g_emax3.emax3_reg[7]_srl2_i_348/O
+                         net (fo=1, routed)           0.013     8.063    g_emax3.emax3_reg[7]_srl2_i_348_n_0
+    SLICE_X49Y165        CARRY8 (Prop_CARRY8_SLICEL_S[1]_CO[5])
+                                                      0.273     8.336 r  g_emax3.emax3_reg[7]_srl2_i_298/CO[5]
+                         net (fo=11, routed)          0.242     8.577    g_emax3.emax3_reg[7]_srl2_i_298_n_2
+    SLICE_X49Y166        LUT6 (Prop_H6LUT_SLICEL_I0_O)
+                                                      0.083     8.660 r  g_emax3.emax3_reg[7]_srl2_i_336/O
+                         net (fo=4, routed)           0.567     9.228    g_emax3.emax3_reg[7]_srl2_i_336_n_0
+    SLICE_X48Y168        LUT4 (Prop_B6LUT_SLICEL_I0_O)
+                                                      0.138     9.366 r  g_emax3.emax3_reg[7]_srl2_i_296/O
+                         net (fo=1, routed)           0.013     9.379    g_emax3.emax3_reg[7]_srl2_i_296_n_0
+    SLICE_X48Y168        CARRY8 (Prop_CARRY8_SLICEL_S[1]_CO[5])
+                                                      0.273     9.652 r  g_emax3.emax3_reg[7]_srl2_i_228/CO[5]
+                         net (fo=7, routed)           0.222     9.873    g_emax3.emax3_reg[7]_srl2_i_228_n_2
+    SLICE_X48Y166        LUT3 (Prop_D6LUT_SLICEL_I2_O)
+                                                      0.081     9.954 r  g_emax3.emax3_reg[7]_srl2_i_332/O
+                         net (fo=7, routed)           0.117    10.071    g_emax3.emax3_reg[7]_srl2_i_332_n_0
+    SLICE_X48Y165        LUT6 (Prop_F6LUT_SLICEL_I3_O)
+                                                      0.150    10.221 r  g_emax3.emax3_reg[7]_srl2_i_257/O
+                         net (fo=5, routed)           0.137    10.358    g_emax3.emax3_reg[7]_srl2_i_257_n_0
+    SLICE_X48Y163        LUT4 (Prop_B6LUT_SLICEL_I2_O)
+                                                      0.224    10.582 r  g_emax3.emax3_reg[7]_srl2_i_224/O
+                         net (fo=1, routed)           0.013    10.595    g_emax3.emax3_reg[7]_srl2_i_224_n_0
+    SLICE_X48Y163        CARRY8 (Prop_CARRY8_SLICEL_S[1]_CO[5])
+                                                      0.273    10.868 r  g_emax3.emax3_reg[7]_srl2_i_139/CO[5]
+                         net (fo=11, routed)          0.222    11.089    g_emax3.emax3_reg[7]_srl2_i_139_n_2
+    SLICE_X48Y162        LUT6 (Prop_H6LUT_SLICEL_I0_O)
+                                                      0.153    11.242 r  g_emax3.emax3_reg[7]_srl2_i_254/O
+                         net (fo=4, routed)           0.160    11.402    g_emax3.emax3_reg[7]_srl2_i_254_n_0
+    SLICE_X47Y164        LUT4 (Prop_A6LUT_SLICEL_I0_O)
+                                                      0.137    11.539 r  g_emax3.emax3_reg[7]_srl2_i_189/O
+                         net (fo=1, routed)           0.014    11.553    g_emax3.emax3_reg[7]_srl2_i_189_n_0
+    SLICE_X47Y164        CARRY8 (Prop_CARRY8_SLICEL_S[0]_CO[5])
+                                                      0.278    11.831 f  g_emax3.emax3_reg[7]_srl2_i_136/CO[5]
+                         net (fo=7, routed)           0.238    12.070    g_emax3.emax3_reg[7]_srl2_i_136_n_2
+    SLICE_X47Y162        LUT2 (Prop_H6LUT_SLICEL_I1_O)
+                                                      0.083    12.153 r  g_emax3.emax3_reg[7]_srl2_i_64/O
+                         net (fo=7, routed)           0.277    12.429    g_emax3.emax3_reg[7]_srl2_i_64_n_0
+    SLICE_X46Y161        LUT6 (Prop_H6LUT_SLICEL_I0_O)
+                                                      0.058    12.487 r  g_emax3.emax3_reg[2]_srl2_i_12/O
+                         net (fo=6, routed)           0.249    12.736    g_emax3.emax3_reg[2]_srl2_i_12_n_0
+    SLICE_X47Y161        LUT4 (Prop_B6LUT_SLICEL_I2_O)
+                                                      0.083    12.819 r  g_emax3.emax3_reg[7]_srl2_i_121/O
+                         net (fo=1, routed)           0.013    12.832    g_emax3.emax3_reg[7]_srl2_i_121_n_0
+    SLICE_X47Y161        CARRY8 (Prop_CARRY8_SLICEL_S[1]_CO[5])
+                                                      0.273    13.105 r  g_emax3.emax3_reg[7]_srl2_i_62/CO[5]
+                         net (fo=16, routed)          0.224    13.329    g_emax3.emax3_reg[7]_srl2_i_62_n_2
+    SLICE_X46Y160        LUT6 (Prop_E6LUT_SLICEL_I4_O)
+                                                      0.152    13.481 r  g_emax3.emax3_reg[7]_srl2_i_162/O
+                         net (fo=5, routed)           0.491    13.972    g_emax3.emax3_reg[7]_srl2_i_162_n_0
+    SLICE_X49Y160        LUT4 (Prop_A6LUT_SLICEL_I0_O)
+                                                      0.137    14.109 r  g_emax3.emax3_reg[7]_srl2_i_110/O
+                         net (fo=1, routed)           0.014    14.123    g_emax3.emax3_reg[7]_srl2_i_110_n_0
+    SLICE_X49Y160        CARRY8 (Prop_CARRY8_SLICEL_S[0]_CO[5])
+                                                      0.278    14.401 r  g_emax3.emax3_reg[7]_srl2_i_61/CO[5]
+                         net (fo=11, routed)          0.222    14.623    g_emax3.emax3_reg[7]_srl2_i_61_n_2
+    SLICE_X49Y159        LUT6 (Prop_C6LUT_SLICEL_I0_O)
+                                                      0.150    14.773 r  g_emax3.emax3_reg[7]_srl2_i_98/O
+                         net (fo=4, routed)           0.107    14.880    g_emax3.emax3_reg[7]_srl2_i_98_n_0
+    SLICE_X49Y158        LUT4 (Prop_A6LUT_SLICEL_I0_O)
+                                                      0.137    15.017 r  g_emax3.emax3_reg[7]_srl2_i_48/O
+                         net (fo=1, routed)           0.014    15.031    g_emax3.emax3_reg[7]_srl2_i_48_n_0
+    SLICE_X49Y158        CARRY8 (Prop_CARRY8_SLICEL_S[0]_CO[5])
+                                                      0.278    15.309 r  g_emax3.emax3_reg[7]_srl2_i_15/CO[5]
+                         net (fo=12, routed)          0.283    15.592    g_emax3.emax3_reg[7]_srl2_i_15_n_2
+    SLICE_X50Y158        LUT3 (Prop_G6LUT_SLICEL_I1_O)
+                                                      0.082    15.674 f  g_emax2.emax2[11]_i_63/O
+                         net (fo=7, routed)           0.194    15.869    g_emax2.emax2[11]_i_63_n_0
+    SLICE_X49Y156        LUT6 (Prop_G6LUT_SLICEL_I3_O)
+                                                      0.186    16.055 f  g_emax2.emax2[11]_i_91/O
+                         net (fo=3, routed)           0.195    16.250    g_emax2.emax2[11]_i_91_n_0
+    SLICE_X49Y157        LUT4 (Prop_A5LUT_SLICEL_I2_O)
+                                                      0.137    16.387 r  g_emax2.emax2[11]_i_69/O
+                         net (fo=1, routed)           0.000    16.387    g_emax2.emax2[11]_i_69_n_0
+    SLICE_X49Y157        CARRY8 (Prop_CARRY8_SLICEL_DI[0]_CO[5])
+                                                      0.242    16.629 r  g_emax2.emax2_reg[11]_i_33/CO[5]
+                         net (fo=16, routed)          0.185    16.814    g_emax2.emax2_reg[11]_i_33_n_2
+    SLICE_X50Y157        LUT6 (Prop_E6LUT_SLICEL_I4_O)
+                                                      0.187    17.001 r  g_emax2.emax2[11]_i_5/O
+                         net (fo=29, routed)          0.140    17.141    g_emax2.emax2[11]_i_5_n_0
+    SLICE_X50Y155        LUT4 (Prop_B6LUT_SLICEL_I2_O)
+                                                      0.083    17.224 r  g_emax2.emax2[11]_i_29/O
+                         net (fo=1, routed)           0.013    17.237    g_emax2.emax2[11]_i_29_n_0
+    SLICE_X50Y155        CARRY8 (Prop_CARRY8_SLICEL_S[1]_CO[5])
+                                                      0.273    17.510 f  g_emax2.emax2_reg[11]_i_4/CO[5]
+                         net (fo=24, routed)          0.198    17.708    emax2_d1
+    SLICE_X50Y153        LUT2 (Prop_G6LUT_SLICEL_I0_O)
+                                                      0.186    17.894 r  g_emax3.emax3_reg[7]_srl2_i_2/O
+                         net (fo=10, routed)          0.228    18.122    g_emax3.emax3_reg[7]_srl2_i_2_n_0
+    SLICE_X50Y147        LUT6 (Prop_H6LUT_SLICEL_I0_O)
+                                                      0.153    18.275 r  g_emax3.emax3_reg[1]_srl2_i_1/O
+                         net (fo=67, routed)          0.702    18.977    emax2_d[1]
+    SLICE_X48Y155        LUT2 (Prop_B6LUT_SLICEL_I0_O)
+                                                      0.083    19.060 r  g_sh2.sh2[3][7]_i_8/O
+                         net (fo=1, routed)           0.013    19.073    g_sh2.sh2[3][7]_i_8_n_0
+    SLICE_X48Y155        CARRY8 (Prop_CARRY8_SLICEL_S[1]_CO[7])
+                                                      0.261    19.334 r  g_sh2.sh2_reg[3][7]_i_1/CO[7]
+                         net (fo=1, routed)           0.030    19.364    g_sh2.sh2_reg[3][7]_i_1_n_0
+    SLICE_X48Y156        CARRY8 (Prop_CARRY8_SLICEL_CI_O[3])
+                                                      0.114    19.478 r  g_sh2.sh2_reg[3][11]_i_1/O[3]
+                         net (fo=1, routed)           0.034    19.512    g_sh2.sh2_reg[3][11]_i_1_n_12
+    SLICE_X48Y156        FDRE                                         r  g_sh2.sh2_reg[3][11]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk rise edge)        4.000     4.000 r  <hidden>
+                                                      0.000     4.000 r  clk
+                         net (fo=2653, unset)         0.029     4.029    clk
+    SLICE_X48Y156        FDRE                                         r  g_sh2.sh2_reg[3][11]/C
+                         clock pessimism              0.000     4.029    <hidden>
+                         clock uncertainty           -0.035     3.994    <hidden>
+    SLICE_X48Y156        FDRE (Setup_DFF_SLICEL_C_D)
+                                                      0.044     4.038    g_sh2.sh2_reg[3][11]
+  -------------------------------------------------------------------
+                         required time                          4.038    <hidden>
+                         arrival time                         -19.512    <hidden>
+  -------------------------------------------------------------------
+                         slack                                -15.474    <hidden>
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             0.059ns  (arrival time - required time)
+  Source:                 g_a0.a0_reg[13][1]/C
+                            (rising edge-triggered cell FDRE clocked by clk  {rise@0.000ns fall@2.000ns period=4.000ns})
+  Destination:            g_sa1.sa1_reg[13][1]/D
+                            (rising edge-triggered cell FDRE clocked by clk  {rise@0.000ns fall@2.000ns period=4.000ns})
+  Path Group:             clk
+  Path Type:              Hold (Min at Slow Process Corner)
+  Requirement:            0.000ns  (clk rise@0.000ns - clk rise@0.000ns)
+  Data Path Delay:        0.175ns  (logic 0.112ns (64.000%)  route 0.063ns (36.000%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.013ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    0.042ns
+    Source Clock Delay      (SCD):    0.029ns
+    Clock Pessimism Removal (CPR):    -0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk rise edge)        0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  clk
+                         net (fo=2653, unset)         0.029     0.029    clk
+    SLICE_X52Y203        FDRE                                         r  g_a0.a0_reg[13][1]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X52Y203        FDRE (Prop_EFF_SLICEL_C_Q)
+                                                      0.112     0.141 r  g_a0.a0_reg[13][1]/Q
+                         net (fo=2, routed)           0.063     0.204    sa1_d[13][1]
+    SLICE_X52Y203        FDRE                                         r  g_sa1.sa1_reg[13][1]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk rise edge)        0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  clk
+                         net (fo=2653, unset)         0.042     0.042    clk
+    SLICE_X52Y203        FDRE                                         r  g_sa1.sa1_reg[13][1]/C
+                         clock pessimism              0.000     0.042    <hidden>
+    SLICE_X52Y203        FDRE (Hold_GFF2_SLICEL_C_D)
+                                                      0.103     0.145    g_sa1.sa1_reg[13][1]
+  -------------------------------------------------------------------
+                         required time                         -0.145    <hidden>
+                         arrival time                           0.204    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.059    <hidden>
+
+
+
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clk
+Waveform(ns):       { 0.000 2.000 }
+Period(ns):         4.000
+Sources:            { clk }
+
+Check Type        Corner  Lib Pin     Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location       Pin
+Min Period        n/a     SRL16E/CLK  n/a            1.524         4.000       2.476      SLICE_X45Y156  g_emax3.emax3_reg[0]_srl2/CLK
+Low Pulse Width   Slow    SRL16E/CLK  n/a            0.762         2.000       1.238      SLICE_X45Y156  g_emax3.emax3_reg[0]_srl2/CLK
+High Pulse Width  Slow    SRL16E/CLK  n/a            0.762         2.000       1.238      SLICE_X45Y156  g_emax3.emax3_reg[0]_srl2/CLK
+
+
+

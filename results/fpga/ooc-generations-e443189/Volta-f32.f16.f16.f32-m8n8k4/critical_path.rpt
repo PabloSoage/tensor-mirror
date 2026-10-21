@@ -1,0 +1,95 @@
+Slack (MET) :             0.169ns  (required time - arrival time)
+  Source:                 g_thr5.thr5_reg[0]/C
+                            (rising edge-triggered cell FDRE clocked by clk  {rise@0.000ns fall@2.000ns period=4.000ns})
+  Destination:            g_q6.q6_reg[25]/D
+                            (rising edge-triggered cell FDRE clocked by clk  {rise@0.000ns fall@2.000ns period=4.000ns})
+  Path Group:             clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            4.000ns  (clk rise@4.000ns - clk rise@0.000ns)
+  Data Path Delay:        3.827ns  (logic 1.881ns (49.150%)  route 1.946ns (50.850%))
+  Logic Levels:           15  (CARRY8=6 LUT3=1 LUT4=2 LUT5=2 LUT6=4)
+  Clock Path Skew:        -0.013ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.030ns = ( 4.030 - 4.000 ) 
+    Source Clock Delay      (SCD):    0.043ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk rise edge)        0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  clk
+                         net (fo=661, unset)          0.043     0.043    clk
+    SLICE_X43Y63         FDRE                                         r  g_thr5.thr5_reg[0]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X43Y63         FDRE (Prop_AFF_SLICEM_C_Q)
+                                                      0.113     0.156 r  g_thr5.thr5_reg[0]/Q
+                         net (fo=2, routed)           0.173     0.329    thr5[0]
+    SLICE_X42Y62         LUT4 (Prop_A6LUT_SLICEL_I2_O)
+                                                      0.188     0.517 r  g_q6.q6[24]_i_40/O
+                         net (fo=1, routed)           0.014     0.531    g_q6.q6[24]_i_40_n_0
+    SLICE_X42Y62         CARRY8 (Prop_CARRY8_SLICEL_S[0]_CO[7])
+                                                      0.278     0.809 f  g_q6.q6_reg[24]_i_21/CO[7]
+                         net (fo=1, routed)           0.030     0.839    g_q6.q6_reg[24]_i_21_n_0
+    SLICE_X42Y63         CARRY8 (Prop_CARRY8_SLICEL_CI_CO[7])
+                                                      0.073     0.912 f  g_q6.q6_reg[24]_i_15/CO[7]
+                         net (fo=109, routed)         0.259     1.171    sh1
+    SLICE_X41Y63         LUT6 (Prop_F6LUT_SLICEM_I0_O)
+                                                      0.056     1.227 f  g_q6.q6[27]_i_86/O
+                         net (fo=60, routed)          0.223     1.450    g_q6.q6[27]_i_86_n_0
+    SLICE_X40Y62         LUT3 (Prop_F6LUT_SLICEM_I2_O)
+                                                      0.056     1.506 r  g_q6.q6[27]_i_42/O
+                         net (fo=1, routed)           0.029     1.535    g_q6.q6[27]_i_42_n_0
+    SLICE_X40Y62         CARRY8 (Prop_CARRY8_SLICEM_S[5]_CO[7])
+                                                      0.238     1.773 r  g_q6.q6_reg[27]_i_7/CO[7]
+                         net (fo=1, routed)           0.030     1.803    g_q6.q6_reg[27]_i_7_n_0
+    SLICE_X40Y63         CARRY8 (Prop_CARRY8_SLICEM_CI_CO[7])
+                                                      0.065     1.868 r  g_q6.q6_reg[27]_i_103/CO[7]
+                         net (fo=1, routed)           0.030     1.898    g_q6.q6_reg[27]_i_103_n_0
+    SLICE_X40Y64         CARRY8 (Prop_CARRY8_SLICEM_CI_CO[7])
+                                                      0.065     1.963 r  g_q6.q6_reg[27]_i_68/CO[7]
+                         net (fo=1, routed)           0.030     1.993    g_q6.q6_reg[27]_i_68_n_0
+    SLICE_X40Y65         CARRY8 (Prop_CARRY8_SLICEM_CI_O[6])
+                                                      0.157     2.150 f  g_q6.q6_reg[27]_i_12/O[6]
+                         net (fo=2, routed)           0.148     2.298    g_q6.q6_reg[27]_i_12_n_9
+    SLICE_X40Y66         LUT4 (Prop_C6LUT_SLICEM_I2_O)
+                                                      0.080     2.378 f  g_q6.q6[21]_i_18/O
+                         net (fo=2, routed)           0.170     2.548    g_q6.q6[21]_i_18_n_0
+    SLICE_X40Y66         LUT5 (Prop_E6LUT_SLICEM_I4_O)
+                                                      0.152     2.700 f  g_q6.q6[17]_i_9/O
+                         net (fo=1, routed)           0.154     2.854    g_q6.q6[17]_i_9_n_0
+    SLICE_X40Y66         LUT6 (Prop_G6LUT_SLICEM_I0_O)
+                                                      0.057     2.911 f  g_q6.q6[17]_i_5/O
+                         net (fo=42, routed)          0.239     3.150    g_q6.q6[17]_i_5_n_0
+    SLICE_X40Y69         LUT5 (Prop_B6LUT_SLICEM_I2_O)
+                                                      0.082     3.232 r  g_q6.q6[25]_i_6/O
+                         net (fo=3, routed)           0.173     3.405    g_q6.q6[25]_i_6_n_0
+    SLICE_X39Y67         LUT6 (Prop_B6LUT_SLICEL_I3_O)
+                                                      0.138     3.543 r  g_q6.q6[25]_i_2/O
+                         net (fo=2, routed)           0.171     3.714    g_q6.q6[25]_i_2_n_0
+    SLICE_X37Y67         LUT6 (Prop_A6LUT_SLICEM_I0_O)
+                                                      0.083     3.797 r  g_q6.q6[25]_i_1/O
+                         net (fo=1, routed)           0.073     3.870    q_d[25]
+    SLICE_X37Y67         FDRE                                         r  g_q6.q6_reg[25]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk rise edge)        4.000     4.000 r  <hidden>
+                                                      0.000     4.000 r  clk
+                         net (fo=661, unset)          0.030     4.030    clk
+    SLICE_X37Y67         FDRE                                         r  g_q6.q6_reg[25]/C
+                         clock pessimism              0.000     4.030    <hidden>
+                         clock uncertainty           -0.035     3.995    <hidden>
+    SLICE_X37Y67         FDRE (Setup_AFF_SLICEM_C_D)
+                                                      0.044     4.039    g_q6.q6_reg[25]
+  -------------------------------------------------------------------
+                         required time                          4.039    <hidden>
+                         arrival time                          -3.870    <hidden>
+  -------------------------------------------------------------------
+                         slack                                  0.169    <hidden>
+
+
+
+
