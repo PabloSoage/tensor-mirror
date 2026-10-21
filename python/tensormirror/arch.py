@@ -49,6 +49,12 @@ def tfdpa(arch: str, types: str, shape: str = "", measured: bool = True) -> TFDP
         F = 23
         if fc is FP16:
             ez = -25
+    if measured and arch == "Volta" and fc is FP16:
+        # MMA-Sim has -20 for both outputs; the V100 differs by D. With D in f32 a zero C in
+        # f16 drops no product bits (every e_zero <= -25 matches tools/probe_ezero.py); with
+        # D in f16 the sum stops at 2**-42, which only e_zero = -19 reproduces
+        # (tools/probe_f16_round.py). [MED] on four V100-SXM2, 2026-10-21
+        ez = -19 if fd is FP16 else -25
     if measured:
         # kind::f8f6f4 reads an E2M1 byte as E2M3 in bits 5:0: bits 1:0 are two more
         # mantissa bits, not padding (MMA-Sim drops them). With them zero it is E2M1 in

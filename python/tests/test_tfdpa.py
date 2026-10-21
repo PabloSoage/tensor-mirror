@@ -68,12 +68,21 @@ def test_volta_truncates_at_23_bits_and_rounds_toward_zero():
 def test_zero_c_exponent_truncates_small_products(e_zero, lost_bits):
     # With C = +0 in f16 the zero term sits at e_zero (Volta: -20 [CIT MMA-Sim code]),
     # above a 2**-24 product, so the product loses its low bits. Random bits miss this
-    # (H-001), hence a directed case; still to be checked on a V100 (T-1.3).
+    # (H-001), hence a directed case. The V100 keeps them (H-002): see the next test.
     p = dataclasses.replace(tfdpa("Volta", "f32.f16.f16.f16"), e_zero=e_zero)
     a, b = f16((1 + 2.0**-10) * 2.0**-12), f16((1 + 3 * 2.0**-10) * 2.0**-12)
     sig = 1025 * 1027  # ends in binary 11, so each lost bit shows
     got = as_f32(t_fdpa(p, [a, 0, 0, 0], [b, 0, 0, 0], 0))
     assert got == (sig >> lost_bits << lost_bits) * 2.0**-44
+
+
+def test_volta_zero_c_in_f16_measured():
+    # Measured on the V100 (H-002, addenda B and C): with D in f32 a zero C in f16 drops no
+    # product bits; with D in f16 the sum stops at 2**-42.
+    assert tfdpa("Volta", "f32.f16.f16.f16").e_zero == -25
+    assert tfdpa("Volta", "f16.f16.f16.f16").e_zero == -19
+    assert tfdpa("Volta", "f32.f16.f16.f16", measured=False).e_zero == -20
+    assert tfdpa("Volta", "f32.f16.f16.f32").e_zero == -131
 
 
 def test_special_values():
