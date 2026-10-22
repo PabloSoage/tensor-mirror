@@ -1,0 +1,7 @@
+vivado 2026.1
+tensor-mirror 20faf52a9e0bc34bb9e0c61dbcf115a34367d901
+part xck26-sfvc784-2LV-c
+pl_mhz 200
+top tm_pl_x
+generics L:8 F:24 EZERO:-21 RNE:1 AE:5 AM:10 ALSB:0 AW:16 ASPEC:0 BE:5 BM:10 BLSB:0 BW:16 BSPEC:0 CE:5 CM:10 CLSB:0 DE:5 DM:10 DLSB:0 XP:1 SP:1
+date 2026-10-22T07:36:50
