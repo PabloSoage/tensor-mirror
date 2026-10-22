@@ -7,7 +7,7 @@
 //   0x014 CASES_IN beats accepted on s_axis     0x018 CASES_OUT beats sent on m_axis
 //   0x01C STALLS   cycles m_axis held a result its consumer did not take
 //   0x020 CONTROL  write 1 to bit 0 to clear the three counters
-//   0x024 X0, 0x028 X1, 0x02C X2: words the top describes itself with (0 in tm_pl)
+//   0x024 X0, 0x028 X1, 0x02C X2, 0x030 X3: words the top describes itself with (0 in tm_pl)
 
 module tm_regs #(
     parameter [31:0] VERSION = 32'd1,
@@ -16,7 +16,8 @@ module tm_regs #(
     parameter [31:0] F = 32'd0,
     parameter [31:0] X0 = 32'd0,
     parameter [31:0] X1 = 32'd0,
-    parameter [31:0] X2 = 32'd0
+    parameter [31:0] X2 = 32'd0,
+    parameter [31:0] X3 = 32'd0
 ) (
     input  wire        clk,
     input  wire        pl_resetn,
@@ -98,6 +99,7 @@ module tm_regs #(
                     10'h009: s_axi_rdata <= X0;
                     10'h00A: s_axi_rdata <= X1;
                     10'h00B: s_axi_rdata <= X2;
+                    10'h00C: s_axi_rdata <= X3;
                     default: s_axi_rdata <= 32'd0;
                 endcase
             end else if (s_axi_rvalid && s_axi_rready) begin

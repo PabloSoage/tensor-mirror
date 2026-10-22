@@ -1,17 +1,18 @@
 // tm_pl_x - a PL top for the KV260 build with one rtl/tfdpa.sv unit of any instruction
-// (its parameters are tfdpa's, from tools/rtl_params.py), fed and drained by the AXI DMA
-// of rtl/tm_pl.v's system.
+// (its parameters are tfdpa's, from tools/rtl_params.py), or with GST = 1 one
+// rtl/gst_fdpa.sv unit (K = L elements of AW = BW = 4 bits, groups of G, NS scales per
+// operand), fed and drained by the AXI DMA of rtl/tm_pl.v's system.
 //
 //   s_axis  a case is NB beats: its bits {sfb, sfa, c, b, a}, a in the lowest, packed
 //           without gaps (a[k] in bits AW*k+AW-1..AW*k, then b, then the 32 bits of c,
-//           then sfa and sfb, 8 bits each) and cut into 256-bit beats, the first beat
-//           holding the lowest bits. NB = ceil((L*AW + L*BW + 48) / 256).
+//           then sfa and sfb, NS bytes each) and cut into 256-bit beats, the first beat
+//           holding the lowest bits. NB = ceil((L*AW + L*BW + 32 + 16*NS) / 256).
 //   m_axis  one result per beat, to the DMA's S2MM, LATENCY beats after its case's last
 //             tdata[31:0]    d
 //             tdata[127:32]  zero
 //           tlast follows the tlast of the case's last beat.
 //   s_axi   AXI4-Lite registers (rtl/tm_regs.v), VERSION 2, with
-//             0x024 L   0x028 NB   0x02C ST
+//             0x024 L   0x028 NB   0x02C ST   0x030 GST * 256 + NS
 //
 // The unit (PIPE = 1) moves when the output register is empty or being taken, and s_axis
 // is ready exactly then, as in tm_pl. A case's first NB - 1 beats are held here; its last
@@ -29,7 +30,11 @@ module tm_pl_x #(
     parameter DE = 8, parameter DM = 23, parameter DLSB = 0,
     parameter ST = 0,
     parameter XP = 0,
-    parameter SP = 0
+    parameter SP = 0,
+    parameter GST = 0,          // 1: rtl/gst_fdpa.sv
+    parameter NS = 1,           // scale bytes per operand (tfdpa: 1)
+    parameter G = 16,           // GST: elements per exactly summed group
+    parameter UE4M3 = 0         // GST: scale format
 ) (
     (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 clk CLK" *)
     (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF s_axi:s_axis:m_axis, ASSOCIATED_RESET pl_resetn" *)
@@ -64,9 +69,12 @@ module tm_pl_x #(
     input  wire         m_axis_tready,
     output wire         m_axis_tlast
 );
-    // tfdpa's LATENCY with PIPE = 1
-    localparam LATENCY = 8 + (XP != 0 ? 2 * ($clog2(L + 1) / 2) : 0) + (SP != 0 ? 1 : 0);
-    localparam NB = (L * AW + L * BW + 48 + 255) / 256;  // s_axis beats per case
+    // the unit's LATENCY with PIPE = 1
+    localparam LATENCY = GST != 0
+        ? 8 + (XP != 0 ? $clog2(G) / 2 + $clog2(L / G + 1) / 2 : 0) + (SP != 0 ? 1 : 0)
+        : 8 + (XP != 0 ? 2 * ($clog2(L + 1) / 2) : 0) + (SP != 0 ? 1 : 0);
+    localparam NB = (L * AW + L * BW + 32 + 16 * NS + 255) / 256;  // s_axis beats per case
+    localparam SA = L * AW + L * BW + 32;  // where sfa starts in a case
 
     // ---- the datapath ----------------------------------------------------------------
     wire ce = !m_axis_tvalid || m_axis_tready;
@@ -104,16 +112,27 @@ module tm_pl_x #(
     endgenerate
 
     wire [31:0] d;
-    tfdpa #(
-        .L(L), .F(F), .EZERO(EZERO), .RNE(RNE),
-        .AW(AW), .AE(AE), .AM(AM), .ALSB(ALSB), .ASPEC(ASPEC),
-        .BW(BW), .BE(BE), .BM(BM), .BLSB(BLSB), .BSPEC(BSPEC),
-        .CE(CE), .CM(CM), .CLSB(CLSB), .DE(DE), .DM(DM), .DLSB(DLSB),
-        .ST(ST), .XP(XP), .SP(SP), .PIPE(1)
-    ) u (
-        .clk(clk), .ce(ce), .a(word[L*AW-1:0]), .b(word[L*AW +: L*BW]),
-        .c(word[L*AW+L*BW +: 32]), .sfa(word[L*AW+L*BW+32 +: 8]), .sfb(word[L*AW+L*BW+40 +: 8]),
-        .d(d));
+    generate
+        if (GST != 0) begin : g_gst
+            gst_fdpa #(
+                .K(L), .G(G), .NB(NS), .UE4M3(UE4M3), .F(F), .EZERO(EZERO), .XP(XP), .SP(SP), .PIPE(1)
+            ) u (
+                .clk(clk), .ce(ce), .a(word[L*AW-1:0]), .b(word[L*AW +: L*BW]),
+                .c(word[L*AW+L*BW +: 32]), .sfa(word[SA +: 8*NS]), .sfb(word[SA+8*NS +: 8*NS]),
+                .d(d));
+        end else begin : g_tfdpa
+            tfdpa #(
+                .L(L), .F(F), .EZERO(EZERO), .RNE(RNE),
+                .AW(AW), .AE(AE), .AM(AM), .ALSB(ALSB), .ASPEC(ASPEC),
+                .BW(BW), .BE(BE), .BM(BM), .BLSB(BLSB), .BSPEC(BSPEC),
+                .CE(CE), .CM(CM), .CLSB(CLSB), .DE(DE), .DM(DM), .DLSB(DLSB),
+                .ST(ST), .XP(XP), .SP(SP), .PIPE(1)
+            ) u (
+                .clk(clk), .ce(ce), .a(word[L*AW-1:0]), .b(word[L*AW +: L*BW]),
+                .c(word[L*AW+L*BW +: 32]), .sfa(word[SA +: 8]), .sfb(word[SA+8*NS +: 8]),
+                .d(d));
+        end
+    endgenerate
 
     // valid and last travel beside the data, moving with the same enable
     reg [LATENCY-1:0] v, last;
@@ -132,7 +151,8 @@ module tm_pl_x #(
     assign m_axis_tkeep = 16'hffff;
 
     // ---- registers and counters (rtl/tm_regs.v) --------------------------------------
-    tm_regs #(.VERSION(2), .BUILD(BUILD), .LATENCY(LATENCY), .F(F), .X0(L), .X1(NB), .X2(ST)) u_regs (
+    tm_regs #(.VERSION(2), .BUILD(BUILD), .LATENCY(LATENCY), .F(F), .X0(L), .X1(NB), .X2(ST),
+              .X3(GST * 256 + NS)) u_regs (
         .clk(clk), .pl_resetn(pl_resetn),
         .s_axi_awaddr(s_axi_awaddr), .s_axi_awvalid(s_axi_awvalid), .s_axi_awready(s_axi_awready),
         .s_axi_wdata(s_axi_wdata), .s_axi_wstrb(s_axi_wstrb), .s_axi_wvalid(s_axi_wvalid),

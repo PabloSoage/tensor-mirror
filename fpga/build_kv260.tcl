@@ -112,6 +112,7 @@ set_property board_part $board [current_project]
 set_property target_language Verilog [current_project]
 add_files -norecurse [list [file join $root rtl tm_regs.v] [file join $root rtl tm_pl.v] \
     [file join $root rtl tm_pl_x.v] [file join $root rtl tfdpa_f16.sv] [file join $root rtl tfdpa.sv] \
+    [file join $root rtl gst_fdpa.sv] \
     [file join $root rtl pipe_max.sv] [file join $root rtl pipe_sum.sv] [file join $root rtl pipe_delay.sv]]
 update_compile_order -fileset sources_1
 

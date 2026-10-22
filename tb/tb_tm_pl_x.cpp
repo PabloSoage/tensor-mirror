@@ -5,8 +5,9 @@
 // AXI4-Lite registers are read (ID, VERSION, LATENCY, L, NB, ST, counters) and the
 // counters cleared.
 //   tb <vectors.txt> [seed] [p(valid) percent] [p(ready) percent]
-// Build with -DTB_L, -DTB_AW, -DTB_BW, -DTB_ST as for tb_tfdpa.cpp, and -DTB_LAT (tfdpa's
-// LATENCY). Exit status 1 on any mismatch.
+// Build with -DTB_L, -DTB_AW, -DTB_BW, -DTB_ST as for tb_tfdpa.cpp, and -DTB_LAT (the unit's
+// LATENCY); for GST = 1, -DTB_GST=1 -DTB_NS=<scales per operand> and tb/tb_gst_fdpa.cpp's
+// vectors (a[0..K-1] b[0..K-1] c sfa[0..NS-1] sfb[0..NS-1] d). Exit status 1 on any mismatch.
 
 #include <cstdint>
 #include <cstdio>
@@ -32,7 +33,14 @@
 #ifndef TB_LAT
 #define TB_LAT 8
 #endif
-constexpr int NB = (TB_L * TB_AW + TB_L * TB_BW + 48 + 255) / 256;
+#ifndef TB_GST
+#define TB_GST 0
+#endif
+#ifndef TB_NS
+#define TB_NS 1
+#endif
+constexpr int NB = (TB_L * TB_AW + TB_L * TB_BW + 32 + 16 * TB_NS + 255) / 256;
+constexpr int SCALES = TB_GST ? TB_NS : TB_ST;  // scales per operand in a vector line
 
 struct Case {
     std::vector<uint32_t> w;  // the NB beats, 8 words each
@@ -101,21 +109,22 @@ int main(int argc, char **argv) {
     FILE *f = fopen(argv[1], "r");
     if (!f) return perror(argv[1]), 2;
     for (;;) {
-        unsigned a[TB_L], b[TB_L], c, sfa = 0, sfb = 0, d;
+        unsigned a[TB_L], b[TB_L], c, sfa[TB_NS] = {}, sfb[TB_NS] = {}, d;
         int got = 0;
         for (int k = 0; k < TB_L; k++) got += fscanf(f, "%x", &a[k]);
         for (int k = 0; k < TB_L; k++) got += fscanf(f, "%x", &b[k]);
         got += fscanf(f, "%x", &c);
-        if (TB_ST) got += fscanf(f, "%x %x", &sfa, &sfb);
+        for (int j = 0; j < SCALES; j++) got += fscanf(f, "%x", &sfa[j]);
+        for (int j = 0; j < SCALES; j++) got += fscanf(f, "%x", &sfb[j]);
         got += fscanf(f, "%x", &d);
-        if (got != 2 * TB_L + 2 + 2 * TB_ST) break;
+        if (got != 2 * TB_L + 2 + 2 * SCALES) break;
         Case x{std::vector<uint32_t>(8 * NB, 0), d};
         int pos = 0;
         for (int k = 0; k < TB_L; k++) put(x.w, &pos, a[k], TB_AW);
         for (int k = 0; k < TB_L; k++) put(x.w, &pos, b[k], TB_BW);
         put(x.w, &pos, c, 32);
-        put(x.w, &pos, sfa, 8);
-        put(x.w, &pos, sfb, 8);
+        for (int j = 0; j < TB_NS; j++) put(x.w, &pos, sfa[j], 8);
+        for (int j = 0; j < TB_NS; j++) put(x.w, &pos, sfb[j], 8);
         cases.push_back(x);
     }
     fclose(f);
@@ -166,11 +175,12 @@ int main(int argc, char **argv) {
 
     uint32_t id = lite_read(0x000), ver = lite_read(0x004), lat = lite_read(0x00C);
     uint32_t cin = lite_read(0x014), cout = lite_read(0x018), stalls = lite_read(0x01C);
-    uint32_t l = lite_read(0x024), nb = lite_read(0x028), st = lite_read(0x02C);
+    uint32_t l = lite_read(0x024), nb = lite_read(0x028), st = lite_read(0x02C), x3 = lite_read(0x030);
     lite_write(0x020, 1);
     uint32_t cin2 = lite_read(0x014);
     bool regs_ok = id == 0x544D4952 && ver == 2 && lat == TB_LAT && cin == uint32_t(NB * n) &&
-                   cout == uint32_t(n) && l == TB_L && nb == NB && st == TB_ST && cin2 == 0;
+                   cout == uint32_t(n) && l == TB_L && nb == NB && st == TB_ST &&
+                   x3 == uint32_t(TB_GST * 256 + TB_NS) && cin2 == 0;
     printf("{\"cases\": %ld, \"beats_per_case\": %d, \"received\": %ld, \"mismatches\": %ld, \"cycles\": %ld, "
            "\"stalls\": %u, \"regs_ok\": %s}\n", n, NB, got, bad, cycles, stalls, regs_ok ? "true" : "false");
     delete dut;
