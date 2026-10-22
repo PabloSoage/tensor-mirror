@@ -1,0 +1,16 @@
+== b1 BUILD 20FAF52A
+tensor-mirror: loaded to slot 0
+pl0_ref 214285713 Hz, enable count 2
+AFI_FS 0x00000800 -> 0x00000800 (HPM0 at 32 bits)
+RST_FPD_TOP 0x000E0032
+ID 0x544D4952, VERSION 0x00000002, BUILD 0x20FAF52A, LATENCY 0x0000000F, F 0x00000019
+udmabuf0 67108864 bytes at 0x000000004ef00000
+load.sh: tensor-mirror answers
+VERSION 0x00000002 L 0x00000020 NB 0x00000003 ST 0x00000000
+pl0_ref 214285713 Hz, sync_mode 1
+version=2 build=0x20FAF52A latency=15 beats_per_case=3 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=262144 per_transfer=599186
+cases_in=786432 cases_out=262144 stalls=0 results=262144 dma_seconds=0.007 cases_per_second=35636318
+tm_run rc=0
+7ee3410a743aa4ca2ef9712624cf92d4d3393f467b26334419bcbacda0f78800  cases.bin
+f4db0bea6a81dee8d2cb08f79fc323df7d9217d51794f66a74c6bd9c241cafc6  results.bin
+ac1330fb6ec4877ec7ffc60260929874c59d817d5468a817aae32a15f6ba263c  tensor-mirror.bit.bin

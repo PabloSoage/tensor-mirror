@@ -1,0 +1,26 @@
+== a4 BUILD 20FAF52A
+tensor-mirror: loaded to slot 0
+pl0_ref 214285713 Hz, enable count 2
+AFI_FS 0x00000800 -> 0x00000800 (HPM0 at 32 bits)
+RST_FPD_TOP 0x000E0032
+ID 0x544D4952, VERSION 0x00000002, BUILD 0x20FAF52A, LATENCY 0x0000000B, F 0x00000018
+udmabuf0 67108864 bytes at 0x000000004ef00000
+load.sh: tensor-mirror answers
+VERSION 0x00000002 L 0x00000004 NB 0x00000002 ST 0x00000000
+pl0_ref 214285713 Hz, sync_mode 1
+version=2 build=0x20FAF52A latency=11 beats_per_case=2 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=524288 per_transfer=838860
+cases_in=1048576 cases_out=524288 stalls=0 results=524288 dma_seconds=0.010 cases_per_second=53472514
+tm_run rc=0
+version=2 build=0x20FAF52A latency=11 beats_per_case=2 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=524288 per_transfer=838860
+cases_in=1048576 cases_out=524288 stalls=0 results=524288 dma_seconds=0.010 cases_per_second=53439267
+tm_run chain-1.bin rc=0
+version=2 build=0x20FAF52A latency=11 beats_per_case=2 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=524288 per_transfer=838860
+cases_in=1048576 cases_out=524288 stalls=0 results=524288 dma_seconds=0.010 cases_per_second=53455395
+tm_run chain-2.bin rc=0
+5a29211f9ae6f67e5190316383ceeb1300129e4ea0c6a2128a265cb636be3fb9  cases.bin
+2d966d0a322ab76b83cb64cd60de35128abea70b89c98b4371cb91dfbf7d3819  chain-1.bin
+3ab46474fa2e20cdd91334c5611e6b97f77ceae180952470ae673686b13429b6  chain-2.bin
+7b7d6f9a1255ebc8df0cc1787459b3b1feeb55974a59575e74bdbfabe017bab4  results-chain-1.bin
+9504ca7f80a7564e9cef5aa2d041300f4593808930efbf40cc1bb0ac952843b8  results-chain-2.bin
+799cea30de68f7e9cdd1a57cb3fc5e9e8ae3986f5a69d56513ddf0371c786d9c  results.bin
+8baa82c54973bface0d420624b6365f2e47a2fd2c43a0836e076f61170bec1cf  tensor-mirror.bit.bin
