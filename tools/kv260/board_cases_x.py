@@ -2,6 +2,7 @@
 
     python tools/kv260/board_cases_x.py gpu   <GPU run dir> <vectors.txt>
     python tools/kv260/board_cases_x.py plain <GPU run dir> <vectors.txt>
+    python tools/kv260/board_cases_x.py chain <arch> <GPU run dir> <vectors prefix>
     python tools/kv260/board_cases_x.py pack  <vectors.txt> <L> <AW> <BW> <NS> <cases.bin>
     python tools/kv260/board_cases_x.py check <vectors.txt> <L> <NS> <results.bin> [report.json]
 
@@ -12,6 +13,10 @@ gpu/mma_block_scale.cu (tools/bs_cases.py: a.bin, b.bin, c.bin, sfa.bin, sfb.bin
 line per element of D, tile by tile, row by row: d is what the GPU gave. Packed E2M1 elements
 are the low nibble of their byte, as the harness takes them. ``plain`` does the same for a
 run of gpu/mma_sync.cu (tools/gpu_cases.py), whose K must be one group of the unit (L).
+``chain`` splits such a run whose K is several groups into one vector file per group, as
+the model chains them (python/tensormirror/tfdpa.py dot; C and D of one format): pass i
+takes group i with the previous pass's result as c, and expects the model's result, or in
+the last pass what the GPU gave.
 ``pack`` writes tm_pl_x's s_axis beats, NB per case: the case's bits {sfb, sfa, c, b, a} from
 the lowest, max(NS, 1) bytes per scale, padded with zeros to 32 * NB bytes. ``check``
 compares every result beat (16 bytes: d and 12 zero bytes) with the vectors' d.
@@ -27,6 +32,9 @@ import numpy as np
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 import gpu_cases  # noqa: E402
 from bs_cases import load  # noqa: E402
+
+from tensormirror.arch import tfdpa  # noqa: E402
+from tensormirror.tfdpa import t_fdpa  # noqa: E402
 
 
 def read(path, L, ns):
@@ -66,6 +74,31 @@ def plain(run_dir, out):
                 for n in range(ins["N"]):
                     br = " ".join(f"{v:x}" for v in b[t, n])
                     f.write(f"{ar} {br} {c[t, r, n]:x} {d[t, r, n]:x}\n")
+
+
+def chain(arch, run_dir, prefix):
+    """Per-group passes of a run whose K is several groups of L: <prefix>-<i>.txt for pass i."""
+    run_dir = pathlib.Path(run_dir)
+    meta = json.loads((run_dir / "cases.json").read_text())
+    ins, a, b, c = gpu_cases.load(run_dir, meta)
+    p = tfdpa(arch, ins["types"], ins["shape"])
+    L, K = p.L_max, ins["K"]
+    if p.fc != p.fd or K % L or K == L:
+        raise ValueError(f"{meta['inst']}: C and D must share a format and K be several groups of {L}")
+    d = np.fromfile(run_dir / "d.bin", gpu_cases.WORD[ins["size"][ins["td"]]]).reshape(c.shape)
+    files = [open(f"{prefix}-{i + 1}.txt", "w", newline="\n") for i in range(K // L)]
+    for t in range(meta["tiles"]):
+        for r in range(ins["M"]):
+            for n in range(ins["N"]):
+                acc = int(c[t, r, n])
+                for i, f in enumerate(files):
+                    ag = [int(v) for v in a[t, r, i * L:(i + 1) * L]]
+                    bg = [int(v) for v in b[t, n, i * L:(i + 1) * L]]
+                    out = int(d[t, r, n]) if i == len(files) - 1 else t_fdpa(p, ag, bg, acc)
+                    f.write(" ".join(f"{v:x}" for v in ag + bg) + f" {acc:x} {out:x}\n")
+                    acc = out
+    for f in files:
+        f.close()
 
 
 def pack(vec, L, aw, bw, ns, out):
@@ -110,8 +143,8 @@ def check(vec, L, ns, res, report=None):
 
 if __name__ == "__main__":
     cmd, args = sys.argv[1], sys.argv[2:]
-    if cmd in ("gpu", "plain"):
-        (gpu if cmd == "gpu" else plain)(*args)
+    if cmd in ("gpu", "plain", "chain"):
+        {"gpu": gpu, "plain": plain, "chain": chain}[cmd](*args)
         sys.exit(0)
     if cmd == "pack":
         pack(args[0], *map(int, args[1:5]), args[5])
