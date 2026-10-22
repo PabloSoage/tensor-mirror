@@ -1,0 +1,110 @@
+Slack (VIOLATED) :        -2.945ns  (required time - arrival time)
+  Source:                 g_p1.p1_reg[14][0]/C
+                            (rising edge-triggered cell FDRE clocked by clk  {rise@0.000ns fall@2.000ns period=4.000ns})
+  Destination:            g_mag2.mag2_reg[0][47]/D
+                            (rising edge-triggered cell FDRE clocked by clk  {rise@0.000ns fall@2.000ns period=4.000ns})
+  Path Group:             clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            4.000ns  (clk rise@4.000ns - clk rise@0.000ns)
+  Data Path Delay:        6.943ns  (logic 4.094ns (58.969%)  route 2.849ns (41.031%))
+  Logic Levels:           20  (CARRY8=5 DSP_A_B_DATA=1 DSP_ALU=1 DSP_M_DATA=1 DSP_MULTIPLIER=1 DSP_OUTPUT=1 DSP_PREADD_DATA=1 LUT1=1 LUT2=1 LUT3=3 LUT4=2 LUT5=1 LUT6=1)
+  Clock Path Skew:        -0.012ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    0.031ns = ( 4.031 - 4.000 ) 
+    Source Clock Delay      (SCD):    0.043ns
+    Clock Pessimism Removal (CPR):    0.000ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk rise edge)        0.000     0.000 r  <hidden>
+                                                      0.000     0.000 r  clk
+                         net (fo=1966, unset)         0.043     0.043    clk
+    SLICE_X38Y49         FDRE                                         r  g_p1.p1_reg[14][0]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X38Y49         FDRE (Prop_BFF_SLICEM_C_Q)
+                                                      0.112     0.155 r  g_p1.p1_reg[14][0]/Q
+                         net (fo=3, routed)           0.244     0.399    g_p1.p1_reg_n_0_[14][0]
+    SLICE_X39Y49         LUT3 (Prop_A5LUT_SLICEL_I0_O)
+                                                      0.137     0.536 r  neg21_i_142/O
+                         net (fo=2, routed)           0.302     0.838    neg21_i_142_n_0
+    SLICE_X39Y49         LUT4 (Prop_B6LUT_SLICEL_I3_O)
+                                                      0.083     0.921 r  neg21_i_149/O
+                         net (fo=1, routed)           0.013     0.934    neg21_i_149_n_0
+    SLICE_X39Y49         CARRY8 (Prop_CARRY8_SLICEL_S[1]_O[5])
+                                                      0.326     1.260 r  neg21_i_126/O[5]
+                         net (fo=2, routed)           0.322     1.582    neg21_i_126_n_10
+    SLICE_X38Y48         LUT3 (Prop_F5LUT_SLICEM_I1_O)
+                                                      0.161     1.743 r  neg21_i_110/O
+                         net (fo=2, routed)           0.363     2.106    neg21_i_110_n_0
+    SLICE_X38Y48         LUT4 (Prop_G6LUT_SLICEM_I3_O)
+                                                      0.082     2.188 r  neg21_i_117/O
+                         net (fo=1, routed)           0.021     2.209    neg21_i_117_n_0
+    SLICE_X38Y48         CARRY8 (Prop_CARRY8_SLICEM_S[6]_CO[7])
+                                                      0.175     2.384 r  neg21_i_37/CO[7]
+                         net (fo=1, routed)           0.030     2.414    neg21_i_37_n_0
+    SLICE_X38Y49         CARRY8 (Prop_CARRY8_SLICEM_CI_O[0])
+                                                      0.078     2.492 r  neg21_i_32/O[0]
+                         net (fo=3, routed)           0.316     2.808    neg21_i_32_n_15
+    SLICE_X39Y48         LUT3 (Prop_F6LUT_SLICEL_I1_O)
+                                                      0.056     2.864 r  neg21_i_34/O
+                         net (fo=2, routed)           0.047     2.911    neg21_i_34_n_0
+    SLICE_X39Y48         LUT5 (Prop_H6LUT_SLICEL_I1_O)
+                                                      0.058     2.969 r  neg21_i_5/O
+                         net (fo=2, routed)           0.149     3.118    neg21_i_5_n_0
+    SLICE_X39Y48         LUT6 (Prop_B6LUT_SLICEL_I0_O)
+                                                      0.083     3.201 r  neg21_i_10/O
+                         net (fo=1, routed)           0.013     3.214    neg21_i_10_n_0
+    SLICE_X39Y48         CARRY8 (Prop_CARRY8_SLICEL_S[1]_O[4])
+                                                      0.279     3.493 f  neg21_i_1/O[4]
+                         net (fo=18, routed)          0.560     4.053    neg21/A[18]
+    DSP48E2_X11Y18       DSP_A_B_DATA (Prop_DSP_A_B_DATA_DSP48E2_A[18]_A2_DATA[18])
+                                                      0.258     4.311 r  neg21/DSP_A_B_DATA_INST/A2_DATA[18]
+                         net (fo=1, routed)           0.000     4.311    neg21/DSP_A_B_DATA.A2_DATA<18>
+    DSP48E2_X11Y18       DSP_PREADD_DATA (Prop_DSP_PREADD_DATA_DSP48E2_A2_DATA[18]_A2A1[18])
+                                                      0.114     4.425 r  neg21/DSP_PREADD_DATA_INST/A2A1[18]
+                         net (fo=1, routed)           0.000     4.425    neg21/DSP_PREADD_DATA.A2A1<18>
+    DSP48E2_X11Y18       DSP_MULTIPLIER (Prop_DSP_MULTIPLIER_DSP48E2_A2A1[18]_V[18])
+                                                      0.699     5.124 f  neg21/DSP_MULTIPLIER_INST/V[18]
+                         net (fo=1, routed)           0.000     5.124    neg21/DSP_MULTIPLIER.V<18>
+    DSP48E2_X11Y18       DSP_M_DATA (Prop_DSP_M_DATA_DSP48E2_V[18]_V_DATA[18])
+                                                      0.065     5.189 r  neg21/DSP_M_DATA_INST/V_DATA[18]
+                         net (fo=1, routed)           0.000     5.189    neg21/DSP_M_DATA.V_DATA<18>
+    DSP48E2_X11Y18       DSP_ALU (Prop_DSP_ALU_DSP48E2_V_DATA[18]_ALU_OUT[18])
+                                                      0.722     5.911 r  neg21/DSP_ALU_INST/ALU_OUT[18]
+                         net (fo=1, routed)           0.000     5.911    neg21/DSP_ALU.ALU_OUT<18>
+    DSP48E2_X11Y18       DSP_OUTPUT (Prop_DSP_OUTPUT_DSP48E2_ALU_OUT[18]_P[18])
+                                                      0.146     6.057 f  neg21/DSP_OUTPUT_INST/P[18]
+                         net (fo=2, routed)           0.237     6.294    neg21_n_87
+    SLICE_X40Y48         LUT1 (Prop_B6LUT_SLICEM_I0_O)
+                                                      0.082     6.376 r  g_mag2.mag2[0][47]_i_5/O
+                         net (fo=1, routed)           0.022     6.398    g_mag2.mag2[0][47]_i_5_n_0
+    SLICE_X40Y48         CARRY8 (Prop_CARRY8_SLICEM_S[1]_O[3])
+                                                      0.183     6.581 r  g_mag2.mag2_reg[0][47]_i_2/O[3]
+                         net (fo=1, routed)           0.173     6.754    g_mag2.mag2_reg[0][47]_i_2_n_12
+    SLICE_X41Y48         LUT2 (Prop_E5LUT_SLICEM_I1_O)
+                                                      0.195     6.949 r  g_mag2.mag2[0][47]_i_1/O
+                         net (fo=1, routed)           0.037     6.986    mag2_d[0][47]
+    SLICE_X41Y48         FDRE                                         r  g_mag2.mag2_reg[0][47]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk rise edge)        4.000     4.000 r  <hidden>
+                                                      0.000     4.000 r  clk
+                         net (fo=1966, unset)         0.031     4.031    clk
+    SLICE_X41Y48         FDRE                                         r  g_mag2.mag2_reg[0][47]/C
+                         clock pessimism              0.000     4.031    <hidden>
+                         clock uncertainty           -0.035     3.996    <hidden>
+    SLICE_X41Y48         FDRE (Setup_EFF2_SLICEM_C_D)
+                                                      0.045     4.041    g_mag2.mag2_reg[0][47]
+  -------------------------------------------------------------------
+                         required time                          4.041    <hidden>
+                         arrival time                          -6.986    <hidden>
+  -------------------------------------------------------------------
+                         slack                                 -2.945    <hidden>
+
+
+
+

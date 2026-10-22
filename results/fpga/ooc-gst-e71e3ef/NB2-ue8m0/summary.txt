@@ -1,0 +1,2 @@
+period_ns 4.0 generics TOP gst_fdpa NB 2 UE4M3 0
+wns_ns -3.044
