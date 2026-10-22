@@ -1,0 +1,2 @@
+period_ns 4.0 pipe 1 c_f16 1 d_f16 1
+wns_ns 0.282
