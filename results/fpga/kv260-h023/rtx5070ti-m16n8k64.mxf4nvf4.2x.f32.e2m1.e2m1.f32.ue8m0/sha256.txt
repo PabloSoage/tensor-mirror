@@ -1,0 +1,3 @@
+969b94bb6899c24ed26b07e0f118d62b89bb3f1b9a8e951f4ba4eaff189cfb2c *tensor-mirror.bit
+a1473cee883be820d6414abf6125f5c82ad5379f9673854172f98175ee330adc *tensor-mirror.bit.bin
+cf88c8b5f5b7b149e37f3d3e0abe0cd7ac7d505ab499f96adad3dd0e268c8900 *tensor-mirror.xsa
