@@ -43,11 +43,12 @@ def as_torch(x: np.ndarray, t: str) -> torch.Tensor:
     return torch.from_numpy(x.view(SIGNED[bits])).view(dtype)  # torch has no uint16/32 views
 
 
-def check(arch: str, inst: str, cases: int, seed: int, mutate: str = "", show: int = 10) -> dict:
+def check(arch: str, inst: str, cases: int, seed: int, mutate: str = "", show: int = 10,
+          measured: bool = False) -> dict:
     shape, types = inst.split(".", 1)
     td, ta, tb, tc = types.split(".")
     k = int(shape.split("k")[1])
-    p = tfdpa(arch, types, shape, measured=False)  # this compares with MMA-Sim
+    p = tfdpa(arch, types, shape, measured=measured)  # published (False) compares with MMA-Sim
     for kv in filter(None, mutate.split(",")):  # mutants: the check must catch them
         key, v = kv.split("=")
         p = dataclasses.replace(p, **{key: v if key == "rounding" else int(v)})
@@ -69,7 +70,7 @@ def check(arch: str, inst: str, cases: int, seed: int, mutate: str = "", show: i
               f"mmasim={hex(d_sim[i])} model={hex(dot(p, a[i].tolist(), b[i].tolist(), int(c[i])))}",
               file=sys.stderr)
     return {"arch": arch, "inst": inst, "L": p.L_max, "F": p.F, "cases": cases, "seed": seed, "mutate": mutate,
-            "mismatches": len(bad), "t_mmasim_s": round(t_sim, 1), "t_model_s": round(t_ref, 1)}
+            "measured": measured, "mismatches": len(bad), "t_mmasim_s": round(t_sim, 1), "t_model_s": round(t_ref, 1)}
 
 
 def tfdpa_instructions():
@@ -87,13 +88,14 @@ def main() -> int:
     ap.add_argument("--all", action="store_true", help="every T-FDPA mma.sync instruction")
     ap.add_argument("--cases", type=int, default=100_000)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--measured", action="store_true", help="the model with what we measured on GPUs")
     ap.add_argument("--mutate", default="", help="override the integer model's parameters, e.g. F=24,rounding=rne")
     args = ap.parse_args()
 
     jobs = list(tfdpa_instructions()) if args.all else [(args.arch, args.inst)]
     failed = 0
     for arch, inst in jobs:
-        r = check(arch, inst, args.cases, args.seed, args.mutate)
+        r = check(arch, inst, args.cases, args.seed, args.mutate, measured=args.measured)
         print(json.dumps(r), flush=True)
         failed += r["mismatches"] > 0
     return 1 if failed else 0
