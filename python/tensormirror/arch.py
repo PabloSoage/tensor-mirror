@@ -40,6 +40,11 @@ def tfdpa(arch: str, types: str, shape: str = "", measured: bool = True) -> TFDP
         F = 13
         if fd is FP32:
             fd = E8M13
+    if measured and arch in ("Turing", "Ampere", "Ada Lovelace") and fd is FP16:
+        # With D in f16 only e_zero = -20 reproduces tools/probe_f16_round.py, not the -21
+        # of MMA-Sim 54294d4. [MED] on an A100 and an RTX 2060 Super, 2026-10-27.
+        # MMA-Sim v2.1.1 has -20 for all three; Ada is that value [CIT], not measured.
+        ez = -20
     if measured and arch == "Turing" and shape == "m8n8k4":
         # Turing runs Volta's m8n8k4 with Volta's 23-bit sum, not its own 24 (MMA-Sim
         # assumes 24 and has no Turing kernel for it). A zero C in f16 does not set the

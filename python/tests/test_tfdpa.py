@@ -88,6 +88,15 @@ def test_volta_zero_c_in_f16_measured():
     assert tfdpa("Turing", "f16.f16.f16.f16", "m8n8k4").e_zero == -19
 
 
+def test_f16_output_zero_exponent_measured():
+    # H-025: -20 with D in f16 on the A100 and the RTX 2060 Super, -21 on the RTX 5070 Ti
+    assert tfdpa("Ampere", "f16.f16.f16.f16", "m16n8k8").e_zero == -20
+    assert tfdpa("Turing", "f16.f16.f16.f16", "m16n8k8").e_zero == -20
+    assert tfdpa("Ampere", "f16.f16.f16.f16", "m16n8k8", measured=False).e_zero == -21
+    assert tfdpa("Ampere", "f32.f16.f16.f32", "m16n8k8").e_zero == -132
+    assert tfdpa("RTX Blackwell", "f16.f16.f16.f16", "m16n8k16").e_zero == -21
+
+
 def test_special_values():
     p = tfdpa("Volta", "f32.f16.f16.f32")
     inf, nan, one = 0x7C00, 0x7E00, f16(1.0)
