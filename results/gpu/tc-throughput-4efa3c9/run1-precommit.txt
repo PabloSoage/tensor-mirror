@@ -1,0 +1,26 @@
+# First run, 2026-10-27 ~18:00, same source as gpu/tc_throughput.cu at 4efa3c9 except the two
+# header comment lines; built in WSL with CUDA 13.3 for sm_75 + sm_120. Driver 621.01.
+# Desktop idle. nvidia-smi during the run: GPU0 max 2850 MHz, 168 W, 68 C;
+# GPU1 max 1980 MHz, 204 W, 62 C. Transcribed from the session console.
+GPU 0: NVIDIA GeForce RTX 5070 Ti, sm_120, 70 SMs
+-- raw mma.sync, median of 9 (TFLOPS)
+FP16 in, FP16 acc (m16n8k16)   199.65
+FP16 in, FP32 acc (m16n8k16)   101.53
+BF16 in, FP32 acc (m16n8k16)   101.54
+TF32 in, FP32 acc (m16n8k8)     50.72
+FP16 in, FP16 acc (m16n8k8)    100.93
+FP16 in, FP32 acc (m16n8k8)     44.91
+-- cuBLAS GemmEx 8192^3, median of 9 (TFLOPS)
+FP16 in, FP16 out, COMPUTE_16F         191.89
+FP16 in, FP16 out, COMPUTE_32F          98.00
+BF16 in, BF16 out, COMPUTE_32F          98.10
+FP32 in, FP32 out, COMPUTE_32F_TF32     47.67
+FP32 in, FP32 out, COMPUTE_32F (SIMT)   35.61
+GPU 1: NVIDIA GeForce RTX 2060 SUPER, sm_75, 34 SMs
+-- raw mma.sync, median of 9 (TFLOPS)
+FP16 in, FP16 acc (m16n8k8)     68.80
+FP16 in, FP32 acc (m16n8k8)     34.45
+-- cuBLAS GemmEx 8192^3, median of 9 (TFLOPS)
+FP16 in, FP16 out, COMPUTE_16F          60.86
+FP16 in, FP16 out, COMPUTE_32F          33.36
+FP32 in, FP32 out, COMPUTE_32F (SIMT)    8.35

@@ -1,0 +1,8 @@
+GPU 1: NVIDIA GeForce RTX 2060 SUPER, sm_75, 34 SMs
+-- raw mma.sync, median of 9 (TFLOPS)
+FP16 in, FP16 acc (m16n8k8)     69.39
+FP16 in, FP32 acc (m16n8k8)     34.45
+-- cuBLAS GemmEx 8192^3, median of 9 (TFLOPS)
+FP16 in, FP16 out, COMPUTE_16F          60.44
+FP16 in, FP16 out, COMPUTE_32F          33.35
+FP32 in, FP32 out, COMPUTE_32F (SIMT)    8.29

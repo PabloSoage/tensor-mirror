@@ -1,0 +1,14 @@
+GPU 0: NVIDIA GeForce RTX 5070 Ti, sm_120, 70 SMs
+-- raw mma.sync, median of 9 (TFLOPS)
+FP16 in, FP16 acc (m16n8k16)   177.58
+FP16 in, FP32 acc (m16n8k16)    96.31
+BF16 in, FP32 acc (m16n8k16)    85.23
+TF32 in, FP32 acc (m16n8k8)     42.57
+FP16 in, FP16 acc (m16n8k8)     85.07
+FP16 in, FP32 acc (m16n8k8)     38.46
+-- cuBLAS GemmEx 8192^3, median of 9 (TFLOPS)
+FP16 in, FP16 out, COMPUTE_16F         141.22
+FP16 in, FP16 out, COMPUTE_32F          81.15
+BF16 in, BF16 out, COMPUTE_32F          79.52
+FP32 in, FP32 out, COMPUTE_32F_TF32     40.43
+FP32 in, FP32 out, COMPUTE_32F (SIMT)   31.07
