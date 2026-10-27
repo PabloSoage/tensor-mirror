@@ -50,6 +50,8 @@ def as_torch(x: np.ndarray, t: str) -> torch.Tensor:
 def check(arch: str, inst: str, cases: int, seed: int, mutate: str = "", show: int = 10,
           measured: bool = False) -> dict:
     shape, types = inst.split(".", 1)
+    if types.startswith("kind::"):  # MMA-Sim 2.1 names kind::f8f6f4 explicitly
+        types = types.split(".", 1)[1]
     td, ta, tb, tc = types.split(".")
     k = int(shape.split("k")[1])
     p = tfdpa(arch, types, shape, measured=measured)  # published (False) compares with MMA-Sim
