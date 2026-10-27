@@ -18,7 +18,11 @@ import time
 import numpy as np
 import torch
 from mmasim.nv_ptx import MMA
-from mmasim.nv_ptx.isa_mma import arch_mma_shape_and_type
+
+try:
+    from mmasim.nv_ptx.isa_mma import arch_mma_shape_and_type
+except ImportError:  # renamed in MMA-Sim 2.1
+    from mmasim.nv_ptx.isa_mma import mma_shape_and_type as arch_mma_shape_and_type
 
 from tensormirror.arch import tfdpa
 from tensormirror.tfdpa import dot
