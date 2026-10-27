@@ -1,0 +1,7 @@
+{"config": "Ampere-f16.f16.f16.f16-m16n8k8", "dut": "tm_pl_x", "exit": 0, "result": {"cases": 100010, "beats_per_case": 2, "received": 100010, "mismatches": 0, "cycles": 328780, "stalls": 42983, "regs_ok": true}}
+{"config": "Ampere-f16.f16.f16.f16-m16n8k8", "dut": "ALWAYS_READY", "exit": 1, "result": {"cases": 100010, "beats_per_case": 2, "received": 86806, "mismatches": 84087, "cycles": 4001400, "stalls": 37429, "regs_ok": false}}
+{"vectors": "a3", "exit": 0, "result": {"cases": 525568, "beats_per_case": 2, "received": 525568, "mismatches": 0, "cycles": 1727072, "stalls": 224758, "regs_ok": true}}
+{"vectors": "a3-chain-1", "exit": 0, "result": {"cases": 525568, "beats_per_case": 2, "received": 525568, "mismatches": 0, "cycles": 1727072, "stalls": 224758, "regs_ok": true}}
+{"vectors": "a3-chain-2", "exit": 0, "result": {"cases": 525568, "beats_per_case": 2, "received": 525568, "mismatches": 0, "cycles": 1727072, "stalls": 224758, "regs_ok": true}}
+{"vectors": "a3-probe", "exit": 0, "result": {"cases": 11008, "beats_per_case": 2, "received": 11008, "mismatches": 0, "cycles": 36140, "stalls": 4745, "regs_ok": true}}
+{"vectors": "a3-probe", "control": "EZERO=-21", "exit": 1, "result": {"cases": 11008, "beats_per_case": 2, "received": 11008, "mismatches": 1, "cycles": 36140, "stalls": 4745, "regs_ok": true}, "first": "case 10496: expected 00000000, got 00000001"}
