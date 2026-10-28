@@ -46,3 +46,25 @@ in one DMA transfer and writes their D.
 - **Throughput:** 96 jobs in 0.007 s of DMA, about 14,200 jobs per second, or 30 GFLOP/s
   (2·64·64·256 per job). That is about 13,200 cycles per job at 187.5 MHz, against 11,027 in
   Verilator with no gaps. A single transfer this short is a rough measure.
+
+## The array's later builds (H-029 f32, H-030, H-031, H-032), the same evening
+
+The same jobs, the files from `81b2e45` on (no change to `load.sh` or `tm_run.py` since).
+The 187.5 MHz runs come from the directory of `arr16`, and the 214.29 MHz runs from one whose
+overlay asks for 200 MHz, as `fpga/kv260/tensor-mirror.dtsi` does.
+
+| dir | system (image in) | clock | jobs | SHA-256 of results.bin | jobs per second |
+|---|---|---|---|---|---|
+| arr32 | `kv260-h029/a100-4x4-m64n64k256.f32.f16.f16.f32` | 187.5 MHz | 96 | `ab8fb251…` | 13,202 |
+| b32 | `kv260-h031/a100-4x4-m64n64k256.f32.f16.f16.f32` | 187.5 MHz | 96 | `ab8fb251…` | 13,196 |
+| a16 | `kv260-h030/a100-4x4-m64n64k256.f16.f16.f16.f16` | 214.29 MHz | 96 | `01221d02…` | 16,238 |
+| b16 | `kv260-h031/a100-4x4-m64n64k256.f16.f16.f16.f16` | 214.29 MHz | 96 | `01221d02…` | 16,236 |
+| c32 | `kv260-h032/a100-4x4-m64n64k256.f32.f16.f16.f32` | 214.29 MHz | 96 | `ab8fb251…` | 15,070 |
+
+- **Every output is the GPUs' D, byte for byte.** `01221d02…` is the f16 D and `ab8fb251…` the
+  f32 D of both the RTX 2060 Super and the A100 (`../../gpu/h029-gemm-17d8b7f/*/sha256.txt`).
+  That is 786,432 elements per type.
+- **Images, builds and clocks:** each image's SHA-256 in `run.log` is its build's, `BUILD`
+  reads the build's commit, and `pl0_ref` read 187,499,999 or 214,285,713 Hz.
+- **At 214.29 MHz:** 16,238 jobs per second in f16 is 34 GFLOP/s, and 15,070 in f32 is
+  32 GFLOP/s. Both are rough, from a single transfer of 6 ms.
