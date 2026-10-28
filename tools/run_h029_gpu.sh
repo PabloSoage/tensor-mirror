@@ -3,18 +3,18 @@
 # a loop of mma.sync over the whole of K (gpu/mma_sync.cu with steps), D gathered back and
 # every tile checked against the model (tools/gpu_cases.py check). Run on the GPU host, in
 # the venv:
-#   CUDA_VISIBLE_DEVICES=<gpu> tools/run_h029_gpu.sh <arch> <sm> <k> <root> [jobs]
+#   CUDA_VISIBLE_DEVICES=<gpu> tools/run_h029_gpu.sh <arch> <sm> <k> <root> [jobs] [M]
 #   e.g. tools/run_h029_gpu.sh Ampere 80 16 build/h029/a100 96
 # The jobs are those of seed 1, the same on every host. Summary in <root>/summary.jsonl.
 set -u
 cd "$(dirname "$0")/.."
-arch=$1 sm=$2 k=$3 root=$4 jobs=${5:-96}
+arch=$1 sm=$2 k=$3 root=$4 jobs=${5:-96} M=${6:-64}  # M: rows of a job (64 x 64 x 256 by default)
 mkdir -p "$root/bin"
 nvcc -O2 -gencode arch=compute_$sm,code=sm_$sm -DTM_SM="${sm%a}" -o "$root/bin/mma_sync" gpu/mma_sync.cu || exit 2
 : > "$root/summary.jsonl"
 for types in f16.f16.f16.f16 f32.f16.f16.f32; do
     d=$root/$types inst=m16n8k$k.$types
-    python tools/gemm_cases.py gen --arch "$arch" --types "$types" --jobs "$jobs" --seed 1 --out "$d" > /dev/null || exit 2
+    python tools/gemm_cases.py gen --arch "$arch" --types "$types" --jobs "$jobs" --M "$M" --seed 1 --out "$d" > /dev/null || exit 2
     read -r nt steps < <(python tools/gemm_cases.py tiles --dir "$d" --inst "$inst" \
         | python -c "import json,sys; j=json.load(sys.stdin); print(j['tiles'], j['steps'])")
     t=$d/$inst
