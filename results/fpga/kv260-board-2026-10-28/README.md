@@ -60,6 +60,7 @@ overlay asks for 200 MHz, as `fpga/kv260/tensor-mirror.dtsi` does.
 | a16 | `kv260-h030/a100-4x4-m64n64k256.f16.f16.f16.f16` | 214.29 MHz | 96 | `01221d02…` | 16,238 |
 | b16 | `kv260-h031/a100-4x4-m64n64k256.f16.f16.f16.f16` | 214.29 MHz | 96 | `01221d02…` | 16,236 |
 | c32 | `kv260-h032/a100-4x4-m64n64k256.f32.f16.f16.f32` | 214.29 MHz | 96 | `ab8fb251…` | 15,070 |
+| c16 | `kv260-h032/a100-4x4-m64n64k256.f16.f16.f16.f16` | 214.29 MHz | 96 | `01221d02…` | 16,237 |
 
 - **Every output is the GPUs' D, byte for byte.** `01221d02…` is the f16 D and `ab8fb251…` the
   f32 D of both the RTX 2060 Super and the A100 (`../../gpu/h029-gemm-17d8b7f/*/sha256.txt`).
