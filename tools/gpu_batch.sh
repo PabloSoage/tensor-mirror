@@ -23,8 +23,11 @@ run)
     for dir in "$root"/*/; do
         inst=$(basename "$dir")
         tiles=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['tiles'])" "$dir/cases.json")
+        steps=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('steps', 1))" "$dir/cases.json")
         if [[ $inst == m8n8k4.* ]]; then bin=$sm70 name=${inst#m8n8k4.}; else bin=$sync name=$inst; fi
-        "$bin" "$name" "$tiles" "$dir/a.bin" "$dir/b.bin" "$dir/c.bin" "$dir/d.bin" > "$dir/run.json"
+        extra=()  # gpu/mma_sync.cu's loop; mma_sm70 has none
+        if [ "$steps" != 1 ]; then [[ $inst == m8n8k4.* ]] && exit 2; extra=("$steps"); fi
+        "$bin" "$name" "$tiles" "$dir/a.bin" "$dir/b.bin" "$dir/c.bin" "$dir/d.bin" "${extra[@]}" > "$dir/run.json"
     done
     nvidia-smi --query-gpu=name,driver_version,vbios_version --format=csv > "$root/gpu.csv"
     ;;

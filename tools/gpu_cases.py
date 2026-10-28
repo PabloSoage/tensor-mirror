@@ -8,6 +8,8 @@ Instruction names are shape.D.A.B.C as in MMA-Sim, with ``f8f6f4.`` after the sh
 RTX Blackwell's ``kind::f8f6f4`` (e.g. ``m16n8k32.f8f6f4.f32.e2m1.e2m1.f32``).
 
 ``gen`` writes, per tile, M x K of A, N x K of B^T and M x N of C, then D comes back M x N.
+With ``--steps S`` A and B are M x S*K and N x S*K, for gpu/mma_sync.cu's loop of S
+instructions (pass S as its last argument); the model chains the whole row.
 Half the random tiles are uniform raw bits (NaN, infinities and subnormals appear); the
 other half are "scaled": every operand has an exponent within a few binades of 1, so the
 products overlap and every fractional bit of the fused sum shows. Bits a format does not
@@ -102,7 +104,7 @@ def scaled_word(rng: random.Random, fmt: Format, size: int, spread: int) -> int:
 
 def gen(args) -> None:
     ins = parse(args.inst)
-    M, N, K, size = ins["M"], ins["N"], ins["K"], ins["size"]
+    M, N, K, size = ins["M"], ins["N"], ins["K"] * getattr(args, "steps", 1), ins["size"]
     cases = directed(ins["tc"]) if ins["ta"] == ins["tb"] == "f16" and K >= 4 else []
     n, nd = args.tiles, len(cases)
     nprng = np.random.default_rng(args.seed)
@@ -127,14 +129,15 @@ def gen(args) -> None:
     for name, x in (("a", a), ("b", b), ("c", c)):
         x.tofile(out / f"{name}.bin")
     meta = {"arch": args.arch, "inst": args.inst, "random_tiles": n, "scaled_from": n // 2,
-            "directed": [d[0] for d in cases], "tiles": n + nd, "seed": args.seed}
+            "directed": [d[0] for d in cases], "tiles": n + nd, "seed": args.seed,
+            "steps": getattr(args, "steps", 1)}
     (out / "cases.json").write_text(json.dumps(meta, indent=1) + "\n")
     print(json.dumps(meta))
 
 
 def load(d_dir: pathlib.Path, meta: dict):
     ins = parse(meta["inst"])
-    M, N, K, size, nt = ins["M"], ins["N"], ins["K"], ins["size"], meta["tiles"]
+    M, N, K, size, nt = ins["M"], ins["N"], ins["K"] * meta.get("steps", 1), ins["size"], meta["tiles"]
     a = np.fromfile(d_dir / "a.bin", WORD[size[ins["ta"]]]).reshape(nt, M, K)
     b = np.fromfile(d_dir / "b.bin", WORD[size[ins["tb"]]]).reshape(nt, N, K)
     c = np.fromfile(d_dir / "c.bin", WORD[size[ins["tc"]]]).reshape(nt, M, N)
@@ -205,7 +208,7 @@ def check(args) -> int:
               "gpu_vs_model": int((d != model).sum()),
               "gpu_vs_model_raw_tiles": int((d[:half] != model[:half]).sum()),
               "gpu_vs_model_scaled_tiles": int((d[half:rnd.stop] != model[half:rnd.stop]).sum())}
-    if args.mmasim:
+    if args.mmasim and meta.get("steps", 1) == 1:  # MMA-Sim runs one instruction
         s = mmasim_output(meta["arch"], ins, a, b, c)
         report["gpu_vs_mmasim"] = None if s is None else int((d != s).sum())
         report["model_vs_mmasim"] = None if s is None else int((model != s).sum())
@@ -230,6 +233,7 @@ def main() -> int:
     g.add_argument("--inst", default="m8n8k4.f32.f16.f16.f32")
     g.add_argument("--tiles", type=int, default=4096)
     g.add_argument("--seed", type=int, default=1)
+    g.add_argument("--steps", type=int, default=1, help="instructions per tile, K after K")
     g.add_argument("--out", required=True)
     c = sub.add_parser("check")
     c.add_argument("--dir", required=True)

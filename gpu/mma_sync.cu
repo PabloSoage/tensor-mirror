@@ -10,7 +10,11 @@
 //   C: ntiles x 16 x 8, row major        D: ntiles x 16 x 8, row major
 //
 //   mma_sync --list
-//   mma_sync <instruction> <ntiles> <A> <B> <C> <D>    e.g. m16n8k16.f32.bf16.bf16.f32
+//   mma_sync <instruction> <ntiles> <A> <B> <C> <D> [steps]   e.g. m16n8k16.f32.bf16.bf16.f32
+//
+// With steps = S > 1 each warp runs S instructions in a row on its tile, as a GEMM loop does:
+// A is ntiles x 16 x S*K and B ntiles x 8 x S*K, step s takes columns s*K .. s*K+K-1 and
+// the D of each step is the C of the next, in registers.
 //
 // Build: nvcc -O2 -arch=sm_75 (Turing set) | -arch=sm_80 | -arch=sm_89 | -arch=sm_120a (all)
 
@@ -131,27 +135,34 @@ __device__ inline uint32_t load(const uint8_t *p, int es) {
 }
 
 template <class I>
-__global__ void tile_kernel(const uint8_t *A, const uint8_t *B, const uint8_t *C, uint8_t *D, int ntiles) {
+__global__ void tile_kernel(const uint8_t *A, const uint8_t *B, const uint8_t *C, uint8_t *D, int ntiles,
+                            int steps) {
     constexpr int K = I::K, NA = 16 * K / 32, NB = 8 * K / 32;
+    const long KS = long(K) * steps;  // row length of A and B
     const int lane = threadIdx.x % 32, g = lane / 4, t = lane % 4;
     const long tile = long(blockIdx.x) * (blockDim.x / 32) + threadIdx.x / 32;
     const long tt = tile < ntiles ? tile : 0;  // dead warps still run mma.sync
-    uint32_t a[4] = {0, 0, 0, 0}, b[2] = {0, 0}, c[4] = {0, 0, 0, 0}, d[4];
-    for (int i = 0; i < NA; i++) {
-        int row, col;
-        a_pos(I::EA, i, g, t, row, col);
-        a[i * I::EA / 4] |= load(A + ((tt * 16 + row) * K + col) * I::EA, I::EA) << (8 * (i * I::EA % 4));
-    }
-    for (int i = 0; i < NB; i++) {
-        int k = b_pos(I::EB, i, t);
-        b[i * I::EB / 4] |= load(B + ((tt * 8 + g) * K + k) * I::EB, I::EB) << (8 * (i * I::EB % 4));
-    }
+    uint32_t c[4] = {0, 0, 0, 0}, d[4];
     for (int i = 0; i < 4; i++) {  // C and D: row g + 8 * (i / 2), column 2t + i % 2
         uint32_t v = load(C + ((tt * 16 + g + 8 * (i / 2)) * 8 + 2 * t + i % 2) * I::EC, I::EC);
         if (I::EC == 4) c[i] = v;
         else c[i / 2] |= v << (16 * (i % 2));
     }
-    I::run(a, b, c, d);
+    for (int s = 0; s < steps; s++) {
+        const long k0 = long(s) * K;
+        uint32_t a[4] = {0, 0, 0, 0}, b[2] = {0, 0};
+        for (int i = 0; i < NA; i++) {
+            int row, col;
+            a_pos(I::EA, i, g, t, row, col);
+            a[i * I::EA / 4] |= load(A + ((tt * 16 + row) * KS + k0 + col) * I::EA, I::EA) << (8 * (i * I::EA % 4));
+        }
+        for (int i = 0; i < NB; i++) {
+            int k = b_pos(I::EB, i, t);
+            b[i * I::EB / 4] |= load(B + ((tt * 8 + g) * KS + k0 + k) * I::EB, I::EB) << (8 * (i * I::EB % 4));
+        }
+        I::run(a, b, c, d);
+        for (int i = 0; i < 4; i++) c[i] = d[i];  // f16: d[0..1] hold all four, as c[0..1] do
+    }
     if (tile >= ntiles) return;
     for (int i = 0; i < 4; i++) {
         uint32_t v = I::ED == 4 ? d[i] : (d[i / 2] >> (16 * (i % 2))) & 0xffff;
@@ -164,13 +175,13 @@ __global__ void tile_kernel(const uint8_t *A, const uint8_t *B, const uint8_t *C
 struct Entry {
     const char *name;  // shape.D.A.B.C as tensormirror and MMA-Sim name it
     int K, EA, EB, EC, ED;
-    void (*launch)(const uint8_t *, const uint8_t *, const uint8_t *, uint8_t *, int);
+    void (*launch)(const uint8_t *, const uint8_t *, const uint8_t *, uint8_t *, int, int);
 };
 
 template <class I>
-static void launch(const uint8_t *A, const uint8_t *B, const uint8_t *C, uint8_t *D, int nt) {
+static void launch(const uint8_t *A, const uint8_t *B, const uint8_t *C, uint8_t *D, int nt, int steps) {
     const int warps = 8;
-    tile_kernel<I><<<(nt + warps - 1) / warps, 32 * warps>>>(A, B, C, D, nt);
+    tile_kernel<I><<<(nt + warps - 1) / warps, 32 * warps>>>(A, B, C, D, nt, steps);
 }
 #define E(I, NAME) {NAME, I::K, I::EA, I::EB, I::EC, I::ED, launch<I>},
 #define FP8_ENTRIES(A, B)                                                  \
@@ -223,8 +234,8 @@ int main(int argc, char **argv) {
         for (const Entry &e : table) printf("%s\n", e.name);
         return 0;
     }
-    if (argc != 7) {
-        fprintf(stderr, "usage: %s --list | <instruction> <ntiles> <A> <B> <C> <D>\n", argv[0]);
+    if (argc != 7 && argc != 8) {
+        fprintf(stderr, "usage: %s --list | <instruction> <ntiles> <A> <B> <C> <D> [steps]\n", argv[0]);
         return 2;
     }
     const Entry *e = nullptr;
@@ -235,7 +246,8 @@ int main(int argc, char **argv) {
         return 2;
     }
     const long nt = atol(argv[2]);
-    auto a = slurp(argv[3], nt * 16 * e->K * e->EA), b = slurp(argv[4], nt * 8 * e->K * e->EB),
+    const int steps = argc == 8 ? atoi(argv[7]) : 1;
+    auto a = slurp(argv[3], nt * 16 * e->K * steps * e->EA), b = slurp(argv[4], nt * 8 * e->K * steps * e->EB),
          c = slurp(argv[5], nt * 128 * e->EC);
     uint8_t *dA, *dB, *dC, *dD;
     CHECK(cudaMalloc(&dA, a.size()));
@@ -245,7 +257,7 @@ int main(int argc, char **argv) {
     CHECK(cudaMemcpy(dA, a.data(), a.size(), cudaMemcpyHostToDevice));
     CHECK(cudaMemcpy(dB, b.data(), b.size(), cudaMemcpyHostToDevice));
     CHECK(cudaMemcpy(dC, c.data(), c.size(), cudaMemcpyHostToDevice));
-    e->launch(dA, dB, dC, dD, int(nt));
+    e->launch(dA, dB, dC, dD, int(nt), steps);
     CHECK(cudaGetLastError());
     std::vector<uint8_t> d(nt * 128 * e->ED);
     CHECK(cudaMemcpy(d.data(), dD, d.size(), cudaMemcpyDeviceToHost));
@@ -259,7 +271,7 @@ int main(int argc, char **argv) {
     int dev;
     CHECK(cudaGetDevice(&dev));
     CHECK(cudaGetDeviceProperties(&p, dev));
-    printf("{\"device\": \"%s\", \"sm\": %d%d, \"instruction\": \"%s\", \"tiles\": %ld}\n", p.name, p.major, p.minor,
-           argv[1], nt);
+    printf("{\"device\": \"%s\", \"sm\": %d%d, \"instruction\": \"%s\", \"tiles\": %ld, \"steps\": %d}\n", p.name,
+           p.major, p.minor, argv[1], nt, steps);
     return 0;
 }
