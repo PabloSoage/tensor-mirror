@@ -1,0 +1,14 @@
+{
+ "inst": "m16n8k32.mxf8f6f4.1x.f32.e3m2.e5m2.f32.ue8m0",
+ "tiles": 4101,
+ "random_tiles": 4096,
+ "thirds": 1365,
+ "directed": [
+  "tiny_products_c_zero",
+  "overflow_big_scales",
+  "overflow_just",
+  "nan_scale_a",
+  "cancel_to_zero_c_min_subnormal"
+ ],
+ "seed": 1
+}

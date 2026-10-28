@@ -1,0 +1,1 @@
+{"device": "NVIDIA GeForce RTX 5070 Ti", "sm": 120, "instruction": "m16n8k32.mxf8f6f4.1x.f32.e5m2.e2m3.f32.ue8m0", "tiles": 512, "steps": 8}

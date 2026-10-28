@@ -1,0 +1,16 @@
+{
+ "inst": "m16n8k64.mxf4nvf4.4x.f32.e2m1.e2m1.f32.ue4m3",
+ "tiles": 4103,
+ "random_tiles": 4096,
+ "thirds": 1365,
+ "directed": [
+  "ue4m3_sign_bit",
+  "ue4m3_neg_zero_scale",
+  "ue4m3_nan",
+  "ue4m3_nan_with_sign",
+  "ue4m3_zero_scale_c_neg_zero",
+  "ue4m3_subnormal_scales",
+  "cancel_to_zero_c_min_subnormal"
+ ],
+ "seed": 1
+}

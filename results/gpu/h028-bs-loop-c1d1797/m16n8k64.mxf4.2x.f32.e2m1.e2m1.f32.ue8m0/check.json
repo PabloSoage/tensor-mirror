@@ -1,0 +1,10 @@
+{
+ "inst": "m16n8k64.mxf4.2x.f32.e2m1.e2m1.f32.ue8m0",
+ "steps": 8,
+ "tiles": 512,
+ "elements": 65536,
+ "gpu_vs_model": 0,
+ "gpu_inf": 17406,
+ "gpu_nan": 2593,
+ "first_mismatches": []
+}
