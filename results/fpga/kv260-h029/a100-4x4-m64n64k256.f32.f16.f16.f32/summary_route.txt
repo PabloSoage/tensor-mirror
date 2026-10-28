@@ -1,0 +1,11 @@
+stage route
+lut 44255
+ff 34194
+dsp 128
+bram_tile 55
+wns_ns 0.252
+tns_ns 0.000
+setup_failing 0
+whs_ns 0.010
+ths_ns 0.000
+hold_failing 0

@@ -17,6 +17,14 @@ instruction (`tools/run_h029_gpu.sh`).
 |---|---|---|---|---|---|
 | RTX 2060 Super (`rtx2060s/`) | `m16n8k8.f16.f16.f16.f16` | 32 | 393,216 | 138,613 | 0 |
 | | `m16n8k8.f32.f16.f16.f32` | 32 | 393,216 | 262,144 | 0 |
+| A100-PCIE-40GB (`a100/`, FT3) | `m16n8k16.f16.f16.f16.f16` | 16 | 393,216 | 138,613 | 0 |
+| | `m16n8k16.f32.f16.f16.f32` | 16 | 393,216 | 262,144 | 0 |
+
+- **The two GPUs give the same D, byte for byte**, in both types: compare the `gemm_d.bin`
+  lines of `rtx2060s/sha256.txt` and `a100/sha256.txt`. Turing with k8 and 32 instructions,
+  and Ampere with k16 and 16 instructions, chain K in the same groups of L = 8.
+- **The A100's build:** `sm_80` with CUDA 12.9.1, through `tools/slurm_mma.sbatch`. The jobs
+  were made and cut into tiles on the PC, and only `mma_sync` ran on FT3.
 
 - **Finite, per third:** the raw third is all NaN or infinite after 256 terms. The f16 third
   with 8 binades keeps 7,541 of 131,072 finite, because most of it overflows f16. In f32 the

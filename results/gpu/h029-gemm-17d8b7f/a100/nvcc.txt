@@ -1,0 +1,1 @@
+Cuda compilation tools, release 12.9, V12.9.86 (cuda/12.9.1 module), tools/slurm_mma.sbatch
