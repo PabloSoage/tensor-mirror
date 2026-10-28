@@ -92,19 +92,39 @@ module tm_pl_array #(
     reg [1:0] state;
 
     // ---- load: the job's beats into the banks ----------------------------------------
+    reg w_v, w_last;                        // a beat is being written; it is the job's last
 `ifdef MUT_ALWAYS_READY  // mutant for the testbench: beats sent while the array runs are lost
     assign s_axis_tready = 1'b1;
 `else
-    assign s_axis_tready = state == LOAD;
+    assign s_axis_tready = state == LOAD && !(w_v && w_last);  // not while the last is written
 `endif
     wire beat = s_axis_tvalid && s_axis_tready;
     integer n;  // input beats of this job so far
     wire in_a = n < NIA, in_b = !in_a && n < NIA + NIB, in_c = !in_a && !in_b;
     wire [31:0] nb_ = n - NIA, nc_ = n - NIA - NIB;
     wire [31:0] ia = n / BPRA, ib = nb_ / BPRB, ic = nc_ / BPRC;  // the row being loaded
-    wire [31:0] wa = (ia / R) * BPRA + n % BPRA;
-    wire [31:0] wb = (ib / C) * BPRB + nb_ % BPRB;
-    wire [31:0] wc = (ic / R) * BPRC + nc_ % BPRC;
+
+    // A beat is written the cycle after it is taken, from registers placed near the banks:
+    // s_axis_tdata straight into 32 BRAMs misses 214 MHz (H-031). The array starts after the
+    // job's last beat is written.
+    reg w_a, w_b, w_c;
+    reg [31:0] w_ra, w_rb, w_rc;            // bank of the beat: row % R, % C, % R
+    reg [31:0] wa, wb, wc;                  // its address in that bank
+    (* max_fanout = 8 *) reg [255:0] w_data;
+    always @(posedge clk) begin
+        w_v <= pl_resetn && beat;
+        w_last <= n == NIN - 1;
+        w_a <= in_a;
+        w_b <= in_b;
+        w_c <= in_c;
+        w_ra <= ia % R;
+        w_rb <= ib % C;
+        w_rc <= ic % R;
+        wa <= (ia / R) * BPRA + n % BPRA;
+        wb <= (ib / C) * BPRB + nb_ % BPRB;
+        wc <= (ic / R) * BPRC + nc_ % BPRC;
+        w_data <= s_axis_tdata;
+    end
 
     // ---- run: issue counters (stage I), bank reads, then the array (stage R) -----------
     // they address 32 BRAMs across the device: replicated, or the route misses 214 MHz (H-030)
@@ -160,7 +180,7 @@ module tm_pl_array #(
             reg [255:0] mem [0:DA-1];
             reg [255:0] rd;
             always @(posedge clk) begin
-                if (beat && in_a && ia % R == r) mem[wa] <= s_axis_tdata;
+                if (w_v && w_a && w_ra == r) mem[wa] <= w_data;
                 rd <= mem[ra];
             end
             assign a_rd[r*256 +: 256] = rd;
@@ -169,7 +189,7 @@ module tm_pl_array #(
             reg [255:0] mem [0:DB-1];
             reg [255:0] rd;
             always @(posedge clk) begin
-                if (beat && in_b && ib % C == c) mem[wb] <= s_axis_tdata;
+                if (w_v && w_b && w_rb == c) mem[wb] <= w_data;
                 rd <= mem[rb];
             end
             assign b_rd[c*256 +: 256] = rd;
@@ -179,9 +199,9 @@ module tm_pl_array #(
                 // element v of a word is column c + C * v of its group of 256 / EW
                 wire [WE*EW-1:0] load_word;
                 for (v = 0; v < WE; v = v + 1) begin : g_v
-                    assign load_word[v*EW +: EW] = s_axis_tdata[(c + C*v)*EW +: EW];
+                    assign load_word[v*EW +: EW] = w_data[(c + C*v)*EW +: EW];
                 end
-                wire load = beat && in_c && ic % R == r;
+                wire load = w_v && w_c && w_rc == r;
                 wire res = out_v;
                 wire [31:0] waddr = load ? wc : res_addr;
                 wire [WE*EW-1:0] wdata = load ? load_word : {WE{d_arr[(r*C + c)*32 +: EW]}};
@@ -253,12 +273,9 @@ module tm_pl_array #(
             inflight <= 0;
         end else begin
             case (state)
-                LOAD: if (beat) begin
-                    if (n == NIN - 1) begin
-                        n <= 0;
-                        state <= RUN;
-                    end else
-                        n <= n + 1;
+                LOAD: begin
+                    if (beat) n <= n == NIN - 1 ? 0 : n + 1;
+                    if (w_v && w_last) state <= RUN;  // the last beat is written this cycle
                 end
                 RUN: begin
                     q <= q == Q - 1 ? 0 : q + 1;
