@@ -1,0 +1,11 @@
+{
+ "arch": "RTX Blackwell",
+ "inst": "m16n8k32.f8f6f4.f32.e4m3.e5m2.f32",
+ "tiles": 1024,
+ "elements": 131072,
+ "gpu_vs_model": 0,
+ "gpu_vs_model_raw_tiles": 0,
+ "gpu_vs_model_scaled_tiles": 0,
+ "directed": {},
+ "first_mismatches": []
+}

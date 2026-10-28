@@ -1,0 +1,2 @@
+{"inst": "m16n8k8.f32.f16.f16.f32", "steps": 1, "identical_to_base": true}
+{"inst": "m16n8k8.f16.f16.f16.f16", "steps": 1, "identical_to_base": true}
