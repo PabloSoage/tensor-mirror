@@ -91,12 +91,21 @@ module tm_pl_array #(
     localparam LOAD = 2'd0, RUN = 2'd1, WAIT = 2'd2, DRAIN = 2'd3;
     reg [1:0] state;
 
+    // pl_resetn from one flip-flop of proc_sys_reset to hundreds here misses 214 MHz (H-032):
+    // two registers, the second replicated, and everything here (tm_regs too) uses that copy
+    reg rstn0;
+    (* max_fanout = 16 *) reg rstn;
+    always @(posedge clk) begin
+        rstn0 <= pl_resetn;
+        rstn <= rstn0;
+    end
+
     // ---- load: the job's beats into the banks ----------------------------------------
     reg w_v, w_last;                        // a beat is being written; it is the job's last
 `ifdef MUT_ALWAYS_READY  // mutant for the testbench: beats sent while the array runs are lost
     assign s_axis_tready = 1'b1;
 `else
-    assign s_axis_tready = state == LOAD && !(w_v && w_last);  // not while the last is written
+    assign s_axis_tready = rstn && state == LOAD && !(w_v && w_last);  // not while the last is written
 `endif
     wire beat = s_axis_tvalid && s_axis_tready;
     integer n;  // input beats of this job so far
@@ -112,7 +121,7 @@ module tm_pl_array #(
     reg [31:0] wa, wb, wc;                  // its address in that bank
     (* max_fanout = 8 *) reg [255:0] w_data;
     always @(posedge clk) begin
-        w_v <= pl_resetn && beat;
+        w_v <= rstn && beat;
         w_last <= n == NIN - 1;
         w_a <= in_a;
         w_b <= in_b;
@@ -264,7 +273,7 @@ module tm_pl_array #(
 
     // ---- control ----------------------------------------------------------------------------
     always @(posedge clk) begin
-        if (!pl_resetn) begin
+        if (!rstn) begin
             state <= LOAD;
             n <= 0;
             mb <= 0; nbk <= 0; s <= 0; q <= 0; wait_n <= 0;
@@ -315,7 +324,7 @@ module tm_pl_array #(
     // ---- registers and counters (rtl/tm_regs.v) -----------------------------------------------
     tm_regs #(.VERSION(3), .BUILD(BUILD), .LATENCY(LATENCY), .F(F), .X0(L), .X1(Q * 65536 + R * 256 + C),
               .X2(NIN), .X3(NOUT)) u_regs (
-        .clk(clk), .pl_resetn(pl_resetn),
+        .clk(clk), .pl_resetn(rstn),
         .s_axi_awaddr(s_axi_awaddr), .s_axi_awvalid(s_axi_awvalid), .s_axi_awready(s_axi_awready),
         .s_axi_wdata(s_axi_wdata), .s_axi_wstrb(s_axi_wstrb), .s_axi_wvalid(s_axi_wvalid),
         .s_axi_wready(s_axi_wready), .s_axi_bresp(s_axi_bresp), .s_axi_bvalid(s_axi_bvalid),
