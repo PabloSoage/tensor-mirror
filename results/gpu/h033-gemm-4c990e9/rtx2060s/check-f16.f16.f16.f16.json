@@ -1,0 +1,11 @@
+{
+ "arch": "Turing",
+ "inst": "m16n8k8.f16.f16.f16.f16",
+ "tiles": 6144,
+ "elements": 786432,
+ "gpu_vs_model": 0,
+ "gpu_vs_model_raw_tiles": 0,
+ "gpu_vs_model_scaled_tiles": 0,
+ "directed": {},
+ "first_mismatches": []
+}

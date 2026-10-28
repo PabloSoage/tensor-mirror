@@ -1,0 +1,21 @@
+{
+ "arch": "Turing",
+ "types": "f16.f16.f16.f16",
+ "jobs": 96,
+ "elements": 786432,
+ "finite": [
+  0,
+  262144,
+  14773
+ ],
+ "pairs": {
+  "m16n8k8.f16.f16.f16.f16 vs rtl": {
+   "mismatches": 0,
+   "per_third": [
+    0,
+    0,
+    0
+   ]
+  }
+ }
+}
