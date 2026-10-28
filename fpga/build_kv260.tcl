@@ -1,5 +1,5 @@
-# build_kv260.tcl - the KV260 system around rtl/tm_pl.v or rtl/tm_pl_x.v, from nothing, in
-# batch mode:
+# build_kv260.tcl - the KV260 system around rtl/tm_pl.v, rtl/tm_pl_x.v or rtl/tm_pl_array.v,
+# from nothing, in batch mode:
 # block design, synthesis, implementation, bitstream and the .bit.bin for the board's
 # FPGA manager. Tcl only, for Vivado 2026.1 on Windows.
 #
@@ -16,15 +16,15 @@
 #                    (fpga/sta_rates.tcl re-times the routed design at that rate)
 #   stop=synth|route|bitstream [bitstream]
 #   jobs=<n>         [6]
-#   top=tm_pl|tm_pl_x [tm_pl]
-#   NAME:value ...   tm_pl_x's parameters (tfdpa's, from tools/rtl_params.py, with XP and
+#   top=tm_pl|tm_pl_x|tm_pl_array [tm_pl]
+#   NAME:value ...   the top's parameters (tfdpa's, from tools/rtl_params.py, with XP and
 #                    SP), one argument each: cmd splits arguments at '=' and at ','
 #
 # The system:
 #   ps     Zynq UltraScale+ MPSoC with the KV260 preset; pl_clk0 clocks the whole PL;
 #          HPM0 (FPD) at 32 bits for AXI4-Lite, HP0 (FPD) at 128 bits for the DMA,
 #          pl_ps_irq0 for its interrupts
-#   tm     tm_pl or tm_pl_x as a module reference, BUILD = the first 8 hex digits of the
+#   tm     the top as a module reference, BUILD = the first 8 hex digits of the
 #          commit, and the generics
 #   dma    AXI DMA in simple (register) mode: MM2S 256-bit stream into tm's s_axis,
 #          S2MM 128-bit stream from tm's m_axis, 40-bit addresses, 26-bit lengths
@@ -56,7 +56,7 @@ foreach {k v} $pairs { set opt($k) $v }
 if {![info exists opt(work)]} { set opt(work) $root/build/kv260 }
 if {![info exists opt(out)]} { set opt(out) $opt(work)/out }
 if {[lsearch -exact {synth route bitstream} $opt(stop)] < 0} { error "stop=$opt(stop)" }
-if {[lsearch -exact {tm_pl tm_pl_x} $opt(top)] < 0} { error "top=$opt(top)" }
+if {[lsearch -exact {tm_pl tm_pl_x tm_pl_array} $opt(top)] < 0} { error "top=$opt(top)" }
 
 # ---- provenance, before anything is written ----
 set rev [string trim [exec git -C $root rev-parse HEAD]]
@@ -111,7 +111,8 @@ create_project -force tensor-mirror $opt(work)/prj -part $part
 set_property board_part $board [current_project]
 set_property target_language Verilog [current_project]
 add_files -norecurse [list [file join $root rtl tm_regs.v] [file join $root rtl tm_pl.v] \
-    [file join $root rtl tm_pl_x.v] [file join $root rtl tfdpa_f16.sv] [file join $root rtl tfdpa.sv] \
+    [file join $root rtl tm_pl_x.v] [file join $root rtl tm_pl_array.v] [file join $root rtl tm_array.sv] \
+    [file join $root rtl tfdpa_f16.sv] [file join $root rtl tfdpa.sv] \
     [file join $root rtl gst_fdpa.sv] \
     [file join $root rtl pipe_max.sv] [file join $root rtl pipe_sum.sv] [file join $root rtl pipe_delay.sv]]
 update_compile_order -fileset sources_1
