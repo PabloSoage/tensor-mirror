@@ -3,6 +3,8 @@
     python tools/bs_cases.py gen   --inst m16n8k32.mxf8f6f4.1x.f32.e4m3.e2m1.f32.ue8m0 --tiles 2048 --out DIR
     mma_block_scale <inst> <tiles> DIR/a.bin DIR/b.bin DIR/c.bin DIR/sa.bin DIR/sb.bin DIR/sel.bin DIR/d.bin
     python tools/bs_cases.py check --dir DIR [--mmasim] [--jobs N]
+    python tools/bs_cases.py check --dir DIR --steps S --jobs N   (harness run with steps S on
+        tiles // S output tiles: each chains S input tiles, D to the next C)
     python tools/bs_cases.py probe-gen --inst ... --out DIR      (then run as above)
     python tools/bs_cases.py probe-check --dir DIR
 
@@ -207,6 +209,50 @@ def model_output(inst: str, x: dict, jobs: int, measured: bool = True) -> np.nda
     return np.concatenate([_model_tiles(w) for w in work])
 
 
+def _chain_tiles(job):
+    inst, a, b, c, sfa, sfb, steps = job
+    p = block_scale(inst, True)
+    out = np.empty((c.shape[0] // steps, 16, 8), dtype=np.uint32)
+    for t in range(out.shape[0]):
+        acc = c[t * steps].tolist()
+        for u in range(t * steps, t * steps + steps):
+            acc = mma(p, a[u].tolist(), b[u].T.tolist(), acc, sfa[u].tolist(), sfb[u].tolist())
+        out[t] = acc
+    return out
+
+
+def chain_output(inst: str, x: dict, steps: int, jobs: int) -> np.ndarray:
+    """The model as gpu/mma_block_scale.cu with ``steps``: output tile t chains input tiles
+    steps*t .. steps*t+steps-1, C from the first, D of each as the next C."""
+    nt = x["c"].shape[0] // steps
+    groups = np.array_split(np.arange(nt), max(1, jobs * 4))
+    work = []
+    for g in groups:
+        if len(g):
+            ix = np.arange(g[0] * steps, (g[-1] + 1) * steps)
+            work.append((inst, x["a"][ix], x["b"][ix], x["c"][ix], x["sfa"][ix], x["sfb"][ix], steps))
+    with multiprocessing.Pool(jobs) as pool:
+        return np.concatenate(pool.map(_chain_tiles, work))
+
+
+def check_steps(args) -> int:
+    d_dir = pathlib.Path(args.dir)
+    meta, ins, x = load(d_dir)
+    nt = meta["tiles"] // args.steps
+    d = np.fromfile(d_dir / "d.bin", np.uint32).reshape(nt, 16, 8)
+    model = chain_output(meta["inst"], x, args.steps, args.jobs)
+    report = {"inst": meta["inst"], "steps": args.steps, "tiles": nt, "elements": int(d.size),
+              "gpu_vs_model": int((d != model).sum()),
+              "gpu_inf": int(((d & 0x7FFFFFFF) == 0x7F800000).sum()),
+              "gpu_nan": int(((d & 0x7FFFFFFF) > 0x7F800000).sum())}
+    bad = np.argwhere(d != model)[:10]
+    report["first_mismatches"] = [{"tile": int(t), "i": int(i), "j": int(j), "gpu": hex(d[t, i, j]),
+                                   "model": hex(model[t, i, j])} for t, i, j in bad]
+    (d_dir / "check.json").write_text(json.dumps(report, indent=1) + "\n")
+    print(json.dumps({k: v for k, v in report.items() if k != "first_mismatches"}))
+    return 1 if report["gpu_vs_model"] else 0
+
+
 def mmasim_name(ins: dict) -> str:
     return f"{ins['shape']}.block{ins['block']}.f32.{ins['ta']}.{ins['tb']}.f32.{ins['stype']}"
 
@@ -370,6 +416,7 @@ def main() -> int:
     c.add_argument("--dir", required=True)
     c.add_argument("--mmasim", action="store_true")
     c.add_argument("--jobs", type=int, default=1)
+    c.add_argument("--steps", type=int, default=1, help="input tiles chained per output tile")
     p = sub.add_parser("probe-check")
     p.add_argument("--dir", required=True)
     args = ap.parse_args()
@@ -381,7 +428,7 @@ def main() -> int:
         return 0
     if args.cmd == "probe-check":
         return probe_check(args)
-    return check(args)
+    return check_steps(args) if args.steps > 1 else check(args)
 
 
 if __name__ == "__main__":

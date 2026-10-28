@@ -16,7 +16,11 @@
 //   SEL: ntiles x 4 u16: byte-id-a, thread-id-a, byte-id-b, thread-id-b
 //
 //   mma_block_scale --list
-//   mma_block_scale <instruction> <ntiles> <A> <B> <C> <SA> <SB> <SEL> <D>
+//   mma_block_scale <instruction> <ntiles> <A> <B> <C> <SA> <SB> <SEL> <D> [steps]
+//
+// With steps = S > 1 the files hold S * ntiles input tiles and output tile t chains input
+// tiles S*t .. S*t+S-1, each with its own A, B, scales and selectors: C is the first's, and
+// the D of each step is the C of the next, in registers. D holds ntiles tiles.
 //
 // Build: nvcc -O2 -gencode arch=compute_120a,code=sm_120a
 
@@ -82,25 +86,28 @@ __device__ inline int b_pos(int K, int i, int t) {
 
 template <class I>
 __global__ void tile_kernel(const uint8_t *A, const uint8_t *B, const float *C, const uint32_t *SA,
-                            const uint32_t *SB, const uint16_t *SEL, float *D, int ntiles) {
+                            const uint32_t *SB, const uint16_t *SEL, float *D, int ntiles, int steps) {
     constexpr int K = I::K, BITS = K == 32 ? 8 : 4, NA = 16 * K / 32, NB = 8 * K / 32;
     const int lane = threadIdx.x % 32, g = lane / 4, t = lane % 4;
     const long tile = long(blockIdx.x) * (blockDim.x / 32) + threadIdx.x / 32;
-    const long tt = tile < ntiles ? tile : 0;  // dead warps still run mma.sync
-    uint32_t a[4] = {0, 0, 0, 0}, b[2] = {0, 0};
+    const long t0 = (tile < ntiles ? tile : 0) * steps;  // dead warps still run mma.sync
     float c[4], d[4];
-    for (int i = 0; i < NA; i++) {
-        int row, col;
-        a_pos(K, i, g, t, row, col);
-        uint32_t v = A[(tt * 16 + row) * K + col] & ((1u << BITS) - 1);
-        a[i * BITS / 32] |= v << (i * BITS % 32);
+    for (int i = 0; i < 4; i++) c[i] = C[(t0 * 16 + g + 8 * (i / 2)) * 8 + 2 * t + i % 2];
+    for (long tt = t0; tt < t0 + steps; tt++) {  // input tiles t0 .. t0+steps-1, D -> next C
+        uint32_t a[4] = {0, 0, 0, 0}, b[2] = {0, 0};
+        for (int i = 0; i < NA; i++) {
+            int row, col;
+            a_pos(K, i, g, t, row, col);
+            uint32_t v = A[(tt * 16 + row) * K + col] & ((1u << BITS) - 1);
+            a[i * BITS / 32] |= v << (i * BITS % 32);
+        }
+        for (int i = 0; i < NB; i++) {
+            uint32_t v = B[(tt * 8 + g) * K + b_pos(K, i, t)] & ((1u << BITS) - 1);
+            b[i * BITS / 32] |= v << (i * BITS % 32);
+        }
+        I::run(a, b, c, d, SA[tt * 32 + lane], SB[tt * 32 + lane], SEL + tt * 4);
+        for (int i = 0; i < 4; i++) c[i] = d[i];
     }
-    for (int i = 0; i < NB; i++) {
-        uint32_t v = B[(tt * 8 + g) * K + b_pos(K, i, t)] & ((1u << BITS) - 1);
-        b[i * BITS / 32] |= v << (i * BITS % 32);
-    }
-    for (int i = 0; i < 4; i++) c[i] = C[(tt * 16 + g + 8 * (i / 2)) * 8 + 2 * t + i % 2];
-    I::run(a, b, c, d, SA[tt * 32 + lane], SB[tt * 32 + lane], SEL + tt * 4);
     if (tile >= ntiles) return;
     for (int i = 0; i < 4; i++) D[(tile * 16 + g + 8 * (i / 2)) * 8 + 2 * t + i % 2] = d[i];
 }
@@ -110,14 +117,14 @@ struct Entry {
     const char *name;  // shape.kind.scale_vec.D.A.B.C.stype
     int K;
     void (*launch)(const uint8_t *, const uint8_t *, const float *, const uint32_t *, const uint32_t *,
-                   const uint16_t *, float *, int);
+                   const uint16_t *, float *, int, int);
 };
 
 template <class I>
 static void launch(const uint8_t *A, const uint8_t *B, const float *C, const uint32_t *SA, const uint32_t *SB,
-                   const uint16_t *SEL, float *D, int nt) {
+                   const uint16_t *SEL, float *D, int nt, int steps) {
     const int warps = 8;
-    tile_kernel<I><<<(nt + warps - 1) / warps, 32 * warps>>>(A, B, C, SA, SB, SEL, D, nt);
+    tile_kernel<I><<<(nt + warps - 1) / warps, 32 * warps>>>(A, B, C, SA, SB, SEL, D, nt, steps);
 }
 #define E(I, NAME) {NAME, I::K, launch<I>},
 #define MX_ENTRY(A, B) E(I_mx_##A##_##B, "m16n8k32.mxf8f6f4.1x.f32." #A "." #B ".f32.ue8m0")
@@ -160,8 +167,8 @@ int main(int argc, char **argv) {
         for (const Entry &e : table) printf("%s\n", e.name);
         return 0;
     }
-    if (argc != 10) {
-        fprintf(stderr, "usage: %s --list | <instruction> <ntiles> <A> <B> <C> <SA> <SB> <SEL> <D>\n", argv[0]);
+    if (argc != 10 && argc != 11) {
+        fprintf(stderr, "usage: %s --list | <instruction> <ntiles> <A> <B> <C> <SA> <SB> <SEL> <D> [steps]\n", argv[0]);
         return 2;
     }
     const Entry *e = nullptr;
@@ -172,15 +179,17 @@ int main(int argc, char **argv) {
         return 2;
     }
     const long nt = atol(argv[2]);
-    auto *dA = to_device<uint8_t>(slurp(argv[3], nt * 16 * e->K));
-    auto *dB = to_device<uint8_t>(slurp(argv[4], nt * 8 * e->K));
-    auto *dC = to_device<float>(slurp(argv[5], nt * 128 * 4));
-    auto *dSA = to_device<uint32_t>(slurp(argv[6], nt * 32 * 4));
-    auto *dSB = to_device<uint32_t>(slurp(argv[7], nt * 32 * 4));
-    auto *dSEL = to_device<uint16_t>(slurp(argv[8], nt * 4 * 2));
+    const int steps = argc == 11 ? atoi(argv[10]) : 1;
+    const long ni = nt * steps;  // input tiles
+    auto *dA = to_device<uint8_t>(slurp(argv[3], ni * 16 * e->K));
+    auto *dB = to_device<uint8_t>(slurp(argv[4], ni * 8 * e->K));
+    auto *dC = to_device<float>(slurp(argv[5], ni * 128 * 4));
+    auto *dSA = to_device<uint32_t>(slurp(argv[6], ni * 32 * 4));
+    auto *dSB = to_device<uint32_t>(slurp(argv[7], ni * 32 * 4));
+    auto *dSEL = to_device<uint16_t>(slurp(argv[8], ni * 4 * 2));
     float *dD;
     CHECK(cudaMalloc(&dD, nt * 128 * 4));
-    e->launch(dA, dB, dC, dSA, dSB, dSEL, dD, int(nt));
+    e->launch(dA, dB, dC, dSA, dSB, dSEL, dD, int(nt), steps);
     CHECK(cudaGetLastError());
     std::vector<uint8_t> d(nt * 128 * 4);
     CHECK(cudaMemcpy(d.data(), dD, d.size(), cudaMemcpyDeviceToHost));
@@ -194,7 +203,7 @@ int main(int argc, char **argv) {
     int dev;
     CHECK(cudaGetDevice(&dev));
     CHECK(cudaGetDeviceProperties(&p, dev));
-    printf("{\"device\": \"%s\", \"sm\": %d%d, \"instruction\": \"%s\", \"tiles\": %ld}\n", p.name, p.major, p.minor,
-           argv[1], nt);
+    printf("{\"device\": \"%s\", \"sm\": %d%d, \"instruction\": \"%s\", \"tiles\": %ld, \"steps\": %d}\n", p.name, p.major,
+           p.minor, argv[1], nt, steps);
     return 0;
 }
