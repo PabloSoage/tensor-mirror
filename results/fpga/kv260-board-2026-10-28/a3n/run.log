@@ -1,0 +1,31 @@
+== a3n BUILD 60213EB9
+tensor-mirror: loaded to slot 0
+pl0_ref 214285713 Hz, enable count 2
+AFI_FS 0x00000A00 -> 0x00000800 (HPM0 at 32 bits)
+RST_FPD_TOP 0x000E0032
+ID 0x544D4952, VERSION 0x00000002, BUILD 0x60213EB9, LATENCY 0x0000000D, F 0x00000018
+udmabuf0 67108864 bytes at 0x000000004ef00000
+load.sh: tensor-mirror answers
+VERSION 0x00000002 L 0x00000008 NB 0x00000002 ST 0x00000000
+pl0_ref 214285713 Hz, sync_mode 1
+version=2 build=0x60213EB9 latency=13 beats_per_case=2 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=525568 per_transfer=838860
+cases_in=1051136 cases_out=525568 stalls=0 results=525568 dma_seconds=0.010 cases_per_second=53455782
+tm_run rc=0
+version=2 build=0x60213EB9 latency=13 beats_per_case=2 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=525568 per_transfer=838860
+cases_in=1051136 cases_out=525568 stalls=0 results=525568 dma_seconds=0.010 cases_per_second=53459153
+tm_run chain-1.bin rc=0
+version=2 build=0x60213EB9 latency=13 beats_per_case=2 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=525568 per_transfer=838860
+cases_in=1051136 cases_out=525568 stalls=0 results=525568 dma_seconds=0.010 cases_per_second=53450128
+tm_run chain-2.bin rc=0
+version=2 build=0x60213EB9 latency=13 beats_per_case=2 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=11008 per_transfer=838860
+cases_in=22016 cases_out=11008 stalls=0 results=11008 dma_seconds=0.000 cases_per_second=49391801
+tm_run chain-probe.bin rc=0
+ff9308291dcc3a12cd1a57233c156e2df1d8f8395563295734c0821dc6665b32  cases.bin
+2f86e7cd0bd2bc8abd647807b475782ed1c4534259c4b9b73524dfaa7b9889fe  chain-1.bin
+b527f7934dba25057f2398aa557c41cb771dd5168a6f070f9c56d1625462541c  chain-2.bin
+b340791e3858f8c1c92913e658de3c50442726fabd07846b9e07e36b7e1fdada  chain-probe.bin
+a8735331ace1e4aa86364a3233d2bf363335468cbae761283af19ddcdeef1e30  results-chain-1.bin
+56f27e8d2bd7d65885cfd3221b399007ff9987d06e42dcad70097921ce552734  results-chain-2.bin
+45a4bf9446a49279566515531a558af7439ec02edc2346d4dd630bea1329e686  results-chain-probe.bin
+800d75f56a7e7bb949cee9b25767d2702fb2008f630ebf6aa8717b1393013f3d  results.bin
+8309c719ec2c6e40d5f96c1b09e528f998454ab49803b0affb598a4f49a14679  tensor-mirror.bit.bin

@@ -1,0 +1,17 @@
+== a3old BUILD 20FAF52A
+tensor-mirror: loaded to slot 0
+pl0_ref 214285713 Hz, enable count 2
+AFI_FS 0x00000800 -> 0x00000800 (HPM0 at 32 bits)
+RST_FPD_TOP 0x000E0032
+ID 0x544D4952, VERSION 0x00000002, BUILD 0x20FAF52A, LATENCY 0x0000000D, F 0x00000018
+udmabuf0 67108864 bytes at 0x000000004ef00000
+load.sh: tensor-mirror answers
+VERSION 0x00000002 L 0x00000008 NB 0x00000002 ST 0x00000000
+pl0_ref 214285713 Hz, sync_mode 1
+tm_run rc=1
+version=2 build=0x20FAF52A latency=13 beats_per_case=2 buffer=udmabuf0 phys=0x4EF00000 size=67108864 cases=11008 per_transfer=838860
+cases_in=22016 cases_out=11008 stalls=0 results=11008 dma_seconds=0.000 cases_per_second=50683500
+tm_run chain-probe.bin rc=0
+b340791e3858f8c1c92913e658de3c50442726fabd07846b9e07e36b7e1fdada  chain-probe.bin
+5e16a2e422320ecb69dc4f7deda5f4579dde52c9a8fd88f38b001fe91eaecca0  results-chain-probe.bin
+41a28cac76badf8a30e4b06686baf08896638cc2515fed21ea07b6617bae8a1c  tensor-mirror.bit.bin
