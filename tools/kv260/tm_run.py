@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""tm_run.py - run a case file through tm_pl or tm_pl_x on the KV260 (after load.sh). As root:
+"""tm_run.py - run a case file through tm_pl, tm_pl_x or tm_pl_array on the KV260 (after load.sh).
+As root:
 
     sudo python3 tm_run.py cases.bin results.bin [udmabuf0] [cases per transfer]
 
 cases.bin holds 32 bytes per case for tm_pl (VERSION 1; its s_axis beat: a, b, c;
 tools/kv260/board_cases.py pack), 32 * NB for tm_pl_x (VERSION 2, NB from its register;
 tools/kv260/board_cases_x.py pack); results.bin gets 16 bytes per case (the m_axis beat).
+For tm_pl_array (VERSION 3) a case is a GEMM job: 32 bytes times the s_axis beats per job of
+its register 0x02C in, 16 times the m_axis beats of 0x030 out (tools/gemm_cases.py rtl).
 The cases go through the AXI DMA in simple mode (AMD PG021), in transfers of up to
 <cases per transfer>: S2MM is armed first with room for the results, then MM2S sends the
 cases; the MM2S transfer ends with tlast, which the PL carries to its last result and ends
@@ -29,6 +32,7 @@ TM_BASE, DMA_BASE = 0xA000_0000, 0xA001_0000
 ID, VERSION, BUILD, LATENCY = 0x000, 0x004, 0x008, 0x00C
 CASES_IN, CASES_OUT, STALLS, CONTROL = 0x014, 0x018, 0x01C, 0x020
 NB = 0x028  # tm_pl_x: s_axis beats per case
+JOB_IN, JOB_OUT = 0x02C, 0x030  # tm_pl_array: s_axis and m_axis beats per job
 TM_ID = 0x544D_4952  # "TMIR"
 MM2S_DMACR, MM2S_DMASR, MM2S_SA, MM2S_SA_MSB, MM2S_LENGTH = 0x00, 0x04, 0x18, 0x1C, 0x28
 S2MM_DMACR, S2MM_DMASR, S2MM_DA, S2MM_DA_MSB, S2MM_LENGTH = 0x30, 0x34, 0x48, 0x4C, 0x58
@@ -85,14 +89,14 @@ def dma_reset(dma):
             raise RuntimeError("the DMA did not come out of reset")
 
 
-def transfer(dma, buf, src_off, dst_off, n, in_bytes, timeout):
+def transfer(dma, buf, src_off, dst_off, n, in_bytes, out_bytes, timeout):
     """One simple-mode transfer of n cases; returns (seconds, problems)."""
     problems = []
     src, dst = buf.phys + src_off, buf.phys + dst_off
     wr(dma, S2MM_DMACR, DMACR_RS)
     wr(dma, S2MM_DA, dst & 0xFFFF_FFFF)
     wr(dma, S2MM_DA_MSB, dst >> 32)
-    wr(dma, S2MM_LENGTH, n * OUT_BYTES)  # arms S2MM
+    wr(dma, S2MM_LENGTH, n * out_bytes)  # arms S2MM
     wr(dma, MM2S_DMACR, DMACR_RS)
     wr(dma, MM2S_SA, src & 0xFFFF_FFFF)
     wr(dma, MM2S_SA_MSB, src >> 32)
@@ -110,8 +114,8 @@ def transfer(dma, buf, src_off, dst_off, n, in_bytes, timeout):
             break
     dt = time.monotonic() - t0
     got = rd(dma, S2MM_LENGTH)  # simple mode: bytes actually written
-    if not problems and got != n * OUT_BYTES:
-        problems.append(f"S2MM wrote {got} bytes, expected {n * OUT_BYTES}")
+    if not problems and got != n * out_bytes:
+        problems.append(f"S2MM wrote {got} bytes, expected {n * out_bytes}")
     return dt, problems
 
 
@@ -135,27 +139,29 @@ def main(argv):
         if rd(tm, ID) != TM_ID:
             raise RuntimeError(f"tm_pl ID is 0x{rd(tm, ID):08X}")
         version = rd(tm, VERSION)
-        nb = rd(tm, NB) if version == 2 else 1
-        in_bytes = BEAT_BYTES * nb
+        nb = {2: rd(tm, NB), 3: rd(tm, JOB_IN)}.get(version, 1)
+        ob = rd(tm, JOB_OUT) if version == 3 else 1  # m_axis beats per case
+        in_bytes, out_bytes = BEAT_BYTES * nb, OUT_BYTES * ob
         if len(cases) % in_bytes:
             raise ValueError(f"{argv[1]}: {len(cases)} bytes is not whole cases of {in_bytes}")
         n_all = len(cases) // in_bytes
-        per = int(argv[4]) if len(argv) > 4 else buf.size // (in_bytes + OUT_BYTES)
-        per = min(per, buf.size // (in_bytes + OUT_BYTES), ((1 << 26) - 1) // in_bytes)
+        per = int(argv[4]) if len(argv) > 4 else buf.size // (in_bytes + out_bytes)
+        per = min(per, buf.size // (in_bytes + out_bytes), ((1 << 26) - 1) // in_bytes)
         src_off, dst_off = 0, per * in_bytes
         print(f"version={version} build=0x{rd(tm, BUILD):08X} latency={rd(tm, LATENCY)} beats_per_case={nb} "
+              f"out_beats_per_case={ob} "
               f"buffer={name} phys=0x{buf.phys:X} size={buf.size} cases={n_all} per_transfer={per}")
         wr(tm, CONTROL, 1)
         dma_reset(dma)
         for first in range(0, n_all, per):
             n = min(per, n_all - first)
             put(buf.mem, src_off, cases[first * in_bytes : (first + n) * in_bytes])
-            dt, pr = transfer(dma, buf, src_off, dst_off, n, in_bytes, timeout=10 + n * 1e-5)
+            dt, pr = transfer(dma, buf, src_off, dst_off, n, in_bytes, out_bytes, timeout=10 + n * 1e-5 * ob)
             busy += dt
             if pr:
                 problems += [f"transfer at case {first}: {p}" for p in pr]
                 break
-            results += get(buf.mem, dst_off, n * OUT_BYTES)
+            results += get(buf.mem, dst_off, n * out_bytes)
         cin, cout, stalls = rd(tm, CASES_IN), rd(tm, CASES_OUT), rd(tm, STALLS)
         dma_reset(dma)
     finally:
@@ -165,10 +171,10 @@ def main(argv):
         buf.close()
     with open(argv[2], "wb") as f:
         f.write(results)
-    print(f"cases_in={cin} cases_out={cout} stalls={stalls} results={len(results) // OUT_BYTES} "
-          f"dma_seconds={busy:.3f} cases_per_second={len(results) / OUT_BYTES / busy if busy else 0:.0f}")
-    if not problems and (cin != n_all * nb or cout != n_all):
-        problems.append(f"tm counted {cin} beats in and {cout} out, expected {n_all * nb} and {n_all}")
+    print(f"cases_in={cin} cases_out={cout} stalls={stalls} results={len(results) // out_bytes} "
+          f"dma_seconds={busy:.3f} cases_per_second={len(results) / out_bytes / busy if busy else 0:.0f}")
+    if not problems and (cin != n_all * nb or cout != n_all * ob):
+        problems.append(f"tm counted {cin} beats in and {cout} out, expected {n_all * nb} and {n_all * ob}")
     for p in problems:
         print(f"PROBLEM {p}")
     return 1 if problems else 0

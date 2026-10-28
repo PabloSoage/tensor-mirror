@@ -1,11 +1,13 @@
 // Verilator testbench for rtl/tm_pl_array.v: the input beats of tools/gemm_cases.py rtl
 // (jobs x NIN beats of 32 bytes) go in on s_axis with random gaps; m_axis is drained with
 // random back-pressure, every output beat is written to <out.bin> and compared with
-// <expected.bin> (jobs x NOUT beats of 16 bytes), with tlast on each job's last beat. Then
+// <expected.bin> (jobs x NOUT beats of 16 bytes). s_axis has tlast at the end of every 4th
+// job and of the last, and m_axis must have it at the end of the same jobs' D. Then
 // the AXI4-Lite registers are read and the counters cleared.
 //   tb <in.bin> <expected.bin> <out.bin> [seed] [p(valid) percent] [p(ready) percent]
 // Build with -DTB_NIN, -DTB_NOUT (beats per job), -DTB_LAT (the unit's LATENCY), -DTB_L,
-// -DTB_X1, -DTB_X2, -DTB_X3 (the registers 0x028..0x030). Exit status 1 on any mismatch.
+// -DTB_X1, -DTB_X2, -DTB_X3 (the registers 0x028..0x030; X2 and X3 are NIN and NOUT).
+// Exit status 1 on any mismatch.
 
 #include <cstdint>
 #include <cstdio>
@@ -89,6 +91,8 @@ int main(int argc, char **argv) {
     std::mt19937 rng(argc > 4 ? atoi(argv[4]) : 1);
     const int pv = argc > 5 ? atoi(argv[5]) : 70, pr = argc > 6 ? atoi(argv[6]) : 70;
     const long nin = jobs * TB_NIN, nout = jobs * TB_NOUT;
+    // tlast closes a transfer of 4 jobs, and the last one; m_axis must close them the same
+    auto tlast_job = [jobs](long j) { return j % 4 == 3 || j == jobs - 1; };
 
     dut = new Vtm_pl_array;
     dut->pl_resetn = 0;
@@ -102,7 +106,7 @@ int main(int argc, char **argv) {
         dut->s_axis_tvalid = v;
         if (v) {
             for (int i = 0; i < 8; i++) dut->s_axis_tdata[i] = in[8 * sent + i];
-            dut->s_axis_tlast = (sent + 1) % TB_NIN == 0;
+            dut->s_axis_tlast = (sent + 1) % TB_NIN == 0 && tlast_job(sent / TB_NIN);
         }
         dut->m_axis_tready = int(rng() % 100) < pr;
         dut->eval();
@@ -115,7 +119,7 @@ int main(int argc, char **argv) {
                 diff |= w != exp[4 * got + i];
             }
             bool last = dut->m_axis_tlast;
-            if (diff || last != ((got + 1) % TB_NOUT == 0)) {
+            if (diff || last != ((got + 1) % TB_NOUT == 0 && tlast_job(got / TB_NOUT))) {
                 if (bad < 10)
                     fprintf(stderr, "job %ld beat %ld: %08x %08x %08x %08x last %d, expected %08x %08x %08x %08x\n",
                             got / TB_NOUT, got % TB_NOUT, dut->m_axis_tdata[0], dut->m_axis_tdata[1],

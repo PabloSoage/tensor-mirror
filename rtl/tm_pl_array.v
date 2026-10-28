@@ -7,12 +7,14 @@
 //   s_axis  a job is A, then B^T, then C, each row major and packed without gaps (element
 //           k of a row in the bits AW*k.., the first element of a beat in its lowest bits):
 //           MJ*KJ*AW/256 beats of A, NJ*KJ*BW/256 of B^T, MJ*NJ*EW/256 of C, with EW the
-//           width of C's and D's elements (16 or 32; D's format is C's). tlast is ignored.
+//           width of C's and D's elements (16 or 32; D's format is C's).
 //   m_axis  D, row major, 128/EW elements per beat, MJ*NJ*EW/128 beats per job; tlast on
-//           each job's last beat. A job's D comes out after its whole input, and the next
-//           job is taken after it (no double buffering).
+//           the last beat of a job whose last input beat had tlast, so one DMA transfer can
+//           hold many jobs. A job's D comes out after its whole input, and the next job is
+//           taken after it (no double buffering).
 //   s_axi   AXI4-Lite registers (rtl/tm_regs.v), VERSION 3, LATENCY the unit's, with
-//             0x024 L   0x028 Q * 65536 + R * 256 + C   0x02C KJ   0x030 MJ * 65536 + NJ
+//             0x024 L   0x028 Q * 65536 + R * 256 + C
+//             0x02C s_axis beats per job   0x030 m_axis beats per job
 //
 // Inside, A is in R banks (row i in bank i % R) and B^T in C banks (row j in bank j % C),
 // 256-bit words; C and D share R x C banks, element (i, j) in bank (i % R, j % C), WE =
@@ -133,10 +135,12 @@ module tm_pl_array #(
     wire [31:0] rd_addr = (io / R) * BPRC + (j0 / C) / WE;
     reg [31:0] dr1, dlane1;
     reg dlast1;
+    reg job_last;                           // this job's last input beat had tlast
     always @(posedge clk) begin
         dr1 <= io % R;
         dlane1 <= (j0 / C) % WE;
-        dlast1 <= o == NOUT - 1;
+        dlast1 <= o == NOUT - 1 && job_last;
+        if (beat && n == NIN - 1) job_last <= s_axis_tlast;
     end
 
     // ---- the banks ----------------------------------------------------------------------
@@ -291,7 +295,7 @@ module tm_pl_array #(
 
     // ---- registers and counters (rtl/tm_regs.v) -----------------------------------------------
     tm_regs #(.VERSION(3), .BUILD(BUILD), .LATENCY(LATENCY), .F(F), .X0(L), .X1(Q * 65536 + R * 256 + C),
-              .X2(KJ), .X3(MJ * 65536 + NJ)) u_regs (
+              .X2(NIN), .X3(NOUT)) u_regs (
         .clk(clk), .pl_resetn(pl_resetn),
         .s_axi_awaddr(s_axi_awaddr), .s_axi_awvalid(s_axi_awvalid), .s_axi_awready(s_axi_awready),
         .s_axi_wdata(s_axi_wdata), .s_axi_wstrb(s_axi_wstrb), .s_axi_wvalid(s_axi_wvalid),

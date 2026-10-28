@@ -19,13 +19,13 @@ d=0  # tfdpa's LATENCY with XP = 1 and SP = 1: 9 + 2 * ($clog2(L + 1) / 2)
 while [ $((1 << d)) -lt $((L + 1)) ]; do d=$((d + 1)); done
 lat=$((9 + 2 * (d / 2)))
 nin=$(( (M * K * aw + N * K * bw + M * N * ew) / 256 )) nout=$(( M * N * ew / 128 ))
-x1=$(( Q * 65536 + R * 256 + C )) x3=$(( M * 65536 + N ))
+x1=$(( Q * 65536 + R * 256 + C ))
 build() {  # name, extra verilator flags...
     local name=$1
     shift
     verilator --cc --exe --build -O3 -Wall -Wno-UNUSEDSIGNAL --top-module tm_pl_array \
         -Mdir "$b/$tag-$name" -o tb $g -GXP=1 -GSP=1 -GR=$R -GC=$C -GQ=$Q -GMJ=$M -GNJ=$N -GKJ=$K "$@" \
-        -CFLAGS "-DTB_NIN=$nin -DTB_NOUT=$nout -DTB_LAT=$lat -DTB_L=$L -DTB_X1=$x1 -DTB_X2=$K -DTB_X3=$x3 -std=c++17" \
+        -CFLAGS "-DTB_NIN=$nin -DTB_NOUT=$nout -DTB_LAT=$lat -DTB_L=$L -DTB_X1=$x1 -DTB_X2=$nin -DTB_X3=$nout -std=c++17" \
         "$PWD/rtl/tm_regs.v" "$PWD/rtl/tm_pl_array.v" "$PWD/rtl/tm_array.sv" \
         "$PWD/rtl/pipe_max.sv" "$PWD/rtl/pipe_sum.sv" "$PWD/rtl/pipe_delay.sv" "$PWD/rtl/tfdpa.sv" \
         "$PWD/tb/tb_tm_pl_array.cpp" > "$b/$tag-$name.log" 2>&1 \
