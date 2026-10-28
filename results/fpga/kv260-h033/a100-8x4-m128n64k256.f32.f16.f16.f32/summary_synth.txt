@@ -1,0 +1,11 @@
+stage synth
+lut 94253
+ff 63345
+dsp 256
+bram_tile 55
+wns_ns 1.967
+tns_ns 0.000
+setup_failing 0
+whs_ns -0.093
+ths_ns -1073.281
+hold_failing 39530

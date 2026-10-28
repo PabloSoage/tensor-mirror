@@ -69,3 +69,20 @@ overlay asks for 200 MHz, as `fpga/kv260/tensor-mirror.dtsi` does.
   reads the build's commit, and `pl0_ref` read 187,499,999 or 214,285,713 Hz.
 - **At 214.29 MHz:** 16,238 jobs per second in f16 is 34 GFLOP/s, and 15,070 in f32 is
   32 GFLOP/s. Both are rough, from a single transfer of 6 ms.
+
+## The 8 x 4 array (H-033), later still
+
+The 187.5 MHz directory, with the jobs of `../../gpu/h033-gemm-4c990e9` (128 x 64 x 256).
+
+| dir | system (image in) | clock | jobs | SHA-256 of results.bin | jobs per second |
+|---|---|---|---|---|---|
+| x16 | `kv260-h033/a100-8x4-m128n64k256.f16.f16.f16.f16` | 187.5 MHz | 96 | `e16863b5…` | 11,532 |
+| x32 | `kv260-h033/a100-8x4-m128n64k256.f32.f16.f16.f32` | 187.5 MHz | 96 | `8eafccc7…` | 10,237 |
+
+- **Both outputs are the RTX 2060 Super's D, byte for byte**
+  (`../../gpu/h033-gemm-4c990e9/rtx2060s/sha256.txt`), 786,432 elements per type.
+- **Throughput:** about 48 GFLOP/s in f16 and 43 in f32 (2·128·64·256 per job). In f16 that is
+  about 16,260 cycles per job, against 12,820 in Verilator with no gaps. The difference is
+  the DMA's, and loading still does not overlap computing.
+- The images' SHA-256 are their builds', `BUILD` reads `4C990E9B`, and `pl0_ref` read
+  187,499,999 Hz.
