@@ -16,7 +16,8 @@ for inst in $("$root/bin/mma_sync" --list); do
     d=$root/s$steps/$inst
     python tools/gpu_cases.py gen --arch "$arch" --inst "$inst" --tiles "$tiles" --seed 1 --steps "$steps" \
         --out "$d" > /dev/null || exit 2
-    "$root/bin/mma_sync" "$inst" "$tiles" "$d/a.bin" "$d/b.bin" "$d/c.bin" "$d/d.bin" "$steps" > "$d/run.json" || exit 2
+    nt=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['tiles'])" "$d/cases.json")  # with the directed
+    "$root/bin/mma_sync" "$inst" "$nt" "$d/a.bin" "$d/b.bin" "$d/c.bin" "$d/d.bin" "$steps" > "$d/run.json" || exit 2
     python tools/gpu_cases.py check --dir "$d" --jobs 16 >> "$root/summary.jsonl"
 done
 if [ -n "$base" ]; then  # prediction 2: S = 1 equals the kernel before the loop
@@ -25,8 +26,9 @@ if [ -n "$base" ]; then  # prediction 2: S = 1 equals the kernel before the loop
     for inst in $("$root/bin/mma_sync" --list); do
         d=$root/s1/$inst
         python tools/gpu_cases.py gen --arch "$arch" --inst "$inst" --tiles "$tiles" --seed 1 --out "$d" > /dev/null
-        "$root/bin/mma_sync" "$inst" "$tiles" "$d/a.bin" "$d/b.bin" "$d/c.bin" "$d/d.bin" > /dev/null
-        "$root/bin/mma_sync_base" "$inst" "$tiles" "$d/a.bin" "$d/b.bin" "$d/c.bin" "$d/d_base.bin" > /dev/null
+        nt=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['tiles'])" "$d/cases.json")
+        "$root/bin/mma_sync" "$inst" "$nt" "$d/a.bin" "$d/b.bin" "$d/c.bin" "$d/d.bin" > /dev/null
+        "$root/bin/mma_sync_base" "$inst" "$nt" "$d/a.bin" "$d/b.bin" "$d/c.bin" "$d/d_base.bin" > /dev/null
         same=$(cmp -s "$d/d.bin" "$d/d_base.bin" && echo true || echo false)
         echo "{\"inst\": \"$inst\", \"steps\": 1, \"identical_to_base\": $same}" >> "$root/summary.jsonl"
     done
