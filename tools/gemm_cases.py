@@ -5,7 +5,7 @@
     mma_sync <inst> <tiles> DIR/<inst>/a.bin ... d.bin <steps>      (on the GPU host)
     python tools/gemm_cases.py gather --dir DIR --inst m16n8k16.f16.f16.f16.f16
     python tools/gemm_cases.py rtl    --dir DIR --ref <inst>          (in.bin, expected.bin)
-    tb_tm_pl_array DIR/in.bin DIR/expected.bin DIR/rtl/d.bin ...
+    tb_tm_pl_array DIR/in.bin DIR/expected.bin DIR/rtl/gemm_d.bin ...
     python tools/gemm_cases.py compare --dir DIR --x <inst> --y rtl [--model]
 
 A job is D = C + A B, with A M x K, B^T N x K and C M x N, raw words (``gen``). The thirds
@@ -14,7 +14,8 @@ binades of 1 (so f16 reaches its subnormals and infinities); bits a format does 
 random. ``tiles`` cuts every job into 16 x 8 output tiles over the whole of K, in the files
 of tools/gpu_cases.py (so its ``check`` runs on them too), for gpu/mma_sync.cu with
 steps = K / k: each warp chains K in order, as a GEMM kernel does. ``gather`` puts the
-tiles' d.bin back as DIR/<inst>/D.bin, jobs x M x N. ``rtl`` writes the beats of
+tiles' d.bin back as DIR/<inst>/gemm_d.bin (not D.bin: on a
+case-insensitive file system that is d.bin), jobs x M x N. ``rtl`` writes the beats of
 rtl/tm_pl_array.v (A, B^T, C of each job, packed) and the expected D beats from one
 reference. ``compare`` counts the elements where two D differ, per third, and the finite
 ones; ``--model`` adds the integer model chained instruction after instruction.
@@ -68,7 +69,7 @@ def gen(args) -> None:
         c[j] = [[scaled_word(rng, fc, size(tc), sp + 1) for _ in range(N)] for _ in range(M)]
     out = pathlib.Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    for name, x in (("A", a), ("B", b), ("C", c)):
+    for name, x in (("gemm_a", a), ("gemm_b", b), ("gemm_c", c)):
         x.tofile(out / f"{name}.bin")
     meta = {"arch": args.arch, "types": args.types, "jobs": J, "M": M, "N": N, "K": K, "seed": args.seed,
             "thirds": [list(SPREADS), third]}
@@ -80,9 +81,9 @@ def load(d: pathlib.Path):
     meta = json.loads((d / "gemm.json").read_text())
     td, ta, tb, tc = types_of(meta)
     J, M, N, K = meta["jobs"], meta["M"], meta["N"], meta["K"]
-    a = np.fromfile(d / "A.bin", WORD[size(ta)]).reshape(J, M, K)
-    b = np.fromfile(d / "B.bin", WORD[size(tb)]).reshape(J, N, K)
-    c = np.fromfile(d / "C.bin", WORD[size(tc)]).reshape(J, M, N)
+    a = np.fromfile(d / "gemm_a.bin", WORD[size(ta)]).reshape(J, M, K)
+    b = np.fromfile(d / "gemm_b.bin", WORD[size(tb)]).reshape(J, N, K)
+    c = np.fromfile(d / "gemm_c.bin", WORD[size(tc)]).reshape(J, M, N)
     return meta, a, b, c
 
 
@@ -114,7 +115,7 @@ def gather(args) -> None:
     td = types_of(meta)[0]
     J, M, N = meta["jobs"], meta["M"], meta["N"]
     t = np.fromfile(d / args.inst / "d.bin", WORD[size(td)]).reshape(J, M // TM, N // TN, TM, TN)
-    t.transpose(0, 1, 3, 2, 4).reshape(J, M, N).tofile(d / args.inst / "D.bin")
+    t.transpose(0, 1, 3, 2, 4).reshape(J, M, N).tofile(d / args.inst / "gemm_d.bin")
 
 
 def rtl(args) -> None:
@@ -123,7 +124,7 @@ def rtl(args) -> None:
     with open(d / "in.bin", "wb") as f:
         for j in range(meta["jobs"]):
             f.write(a[j].tobytes() + b[j].tobytes() + c[j].tobytes())
-    (d / "expected.bin").write_bytes((d / args.ref / "D.bin").read_bytes())
+    (d / "expected.bin").write_bytes((d / args.ref / "gemm_d.bin").read_bytes())
     print(json.dumps({"jobs": meta["jobs"], "in_bytes": (d / "in.bin").stat().st_size, "ref": args.ref}))
 
 
@@ -157,11 +158,11 @@ def model(meta: dict, a, b, c, k: int, jobs: int) -> np.ndarray:
 
 
 def model_cmd(args) -> None:
-    """The model's D as a reference directory, DIR/model/D.bin, for k-wide instructions."""
+    """The model's D as a reference directory, DIR/model/gemm_d.bin, for k-wide instructions."""
     d = pathlib.Path(args.dir)
     meta, a, b, c = load(d)
     (d / "model").mkdir(exist_ok=True)
-    model(meta, a, b, c, args.k, args.jobs).tofile(d / "model" / "D.bin")
+    model(meta, a, b, c, args.k, args.jobs).tofile(d / "model" / "gemm_d.bin")
 
 
 def finite(x: np.ndarray, t: str) -> np.ndarray:
@@ -177,14 +178,14 @@ def compare(args) -> int:
     J, M, N = meta["jobs"], meta["M"], meta["N"]
 
     def read(name):
-        return np.fromfile(d / name / "D.bin", WORD[size(td)]).reshape(J, M, N)
+        return np.fromfile(d / name / "gemm_d.bin", WORD[size(td)]).reshape(J, M, N)
 
     third = meta["thirds"][1]
     ds = {args.x: read(args.x), args.y: read(args.y)}
     if args.model:
         k = parse(args.x)["K"] if args.x != "rtl" else parse(args.y)["K"]
         ds["model"] = model(meta, a, b, c, k, args.jobs)
-        ds["model"].tofile(d / "model-D.bin")
+        ds["model"].tofile(d / "model-gemm_d.bin")
     names = list(ds)
     x = ds[args.x]
     report = {"arch": meta["arch"], "types": meta["types"], "jobs": J, "elements": int(x.size),
@@ -218,7 +219,7 @@ def main() -> int:
         s.add_argument("--inst", required=True)
     s = sub.add_parser("rtl")
     s.add_argument("--dir", required=True)
-    s.add_argument("--ref", required=True, help="the directory under DIR whose D.bin is expected")
+    s.add_argument("--ref", required=True, help="the directory under DIR whose gemm_d.bin is expected")
     s = sub.add_parser("model")
     s.add_argument("--dir", required=True)
     s.add_argument("--k", type=int, required=True, help="k of the instruction the loop runs")

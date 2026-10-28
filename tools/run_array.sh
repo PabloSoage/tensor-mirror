@@ -4,7 +4,7 @@
 # held back (cycles per job), then the SLOT and ALWAYS_READY mutants, which must fail.
 #   tools/run_array.sh <out.jsonl> <dir> <arch> <D.A.B.C> [R] [C] [Q] [M] [N] [K]
 # <dir> holds gemm.json, in.bin and expected.bin (gemm_cases.py rtl); the D of the first run
-# goes to <dir>/rtl/D.bin. The units have XP = 1 and SP = 1, as on the board.
+# goes to <dir>/rtl/gemm_d.bin. The units have XP = 1 and SP = 1, as on the board.
 set -u
 cd "$(dirname "$0")/.."
 out=$1 dir=$2 arch=$3 types=$4 R=${5:-4} C=${6:-4} Q=${7:-16} M=${8:-64} N=${9:-64} K=${10:-256}
@@ -39,7 +39,7 @@ run() {  # name, D file, seed, p(valid), p(ready)
 build tm_pl_array
 build SLOT +define+MUT_SLOT
 build ALWAYS_READY +define+MUT_ALWAYS_READY
-run tm_pl_array "$dir/rtl/D.bin" 3 70 70
+run tm_pl_array "$dir/rtl/gemm_d.bin" 3 70 70
 run tm_pl_array "$b/$tag-full.bin" 1 100 100
 run SLOT "$b/$tag-slot.bin" 3 70 70
 run ALWAYS_READY "$b/$tag-ready.bin" 3 70 70

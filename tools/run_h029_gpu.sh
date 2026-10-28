@@ -21,7 +21,7 @@ for types in f16.f16.f16.f16 f32.f16.f16.f32; do
     "$root/bin/mma_sync" "$inst" "$nt" "$t/a.bin" "$t/b.bin" "$t/c.bin" "$t/d.bin" "$steps" > "$t/run.json" || exit 2
     python tools/gemm_cases.py gather --dir "$d" --inst "$inst" || exit 2
     python tools/gpu_cases.py check --dir "$t" --jobs 16 >> "$root/summary.jsonl"
-    sha256sum "$d/A.bin" "$d/B.bin" "$d/C.bin" "$t/D.bin" | sed "s|$root/||" >> "$root/sha256.txt"
+    sha256sum "$d/gemm_a.bin" "$d/gemm_b.bin" "$d/gemm_c.bin" "$t/gemm_d.bin" | sed "s|$root/||" >> "$root/sha256.txt"
 done
 nvidia-smi --query-gpu=name,driver_version,vbios_version --format=csv -i "${CUDA_VISIBLE_DEVICES:-0}" \
     > "$root/gpu.csv" 2>/dev/null || nvidia-smi --query-gpu=name,driver_version,vbios_version --format=csv > "$root/gpu.csv"
