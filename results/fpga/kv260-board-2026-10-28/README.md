@@ -25,3 +25,24 @@ result with the vectors using `tools/kv260/board_cases_x.py check` (`check*.json
   `20FAF52A`).
 - **Clock:** `pl0_ref` read 214,285,713 Hz (IOPLL / 7). Throughput was about 53 M cases/s with
   no stalls, as before.
+
+## The 4 x 4 array (H-029), later the same day
+
+A second session, from a directory of its own: `run_all.sh`, `load.sh` and `tm_run.py` as of
+`81b2e45`, with the overlay's `assigned-clock-rates` at 187,500,000, because the array does
+not close at 214.29 MHz (`../kv260-h029`). `tm_run.py` streams the 96 jobs through the array
+in one DMA transfer and writes their D.
+
+| dir | system (image in) | jobs | elements of D | mismatches with the RTX 2060 Super |
+|---|---|---|---|---|
+| arr16 | `kv260-h029/a100-4x4-m64n64k256.f16.f16.f16.f16` | 96 | 393,216 | 0 |
+
+- **The D is the GPU's, byte for byte.** The SHA-256 of `results.bin` in `arr16/run.log`,
+  `01221d02…`, is that of the RTX 2060 Super's D in `../../gpu/h029-gemm-17d8b7f/rtx2060s/sha256.txt`.
+  `arr16/compare.json` counts the same element by element.
+- **The case file** is `tools/gemm_cases.py rtl` of those jobs, A, B^T and C of each one packed.
+- **Image, build and clock:** the image's SHA-256 is the build's, `BUILD` reads `17D8B7F6`,
+  and `pl0_ref` read 187,499,999 Hz.
+- **Throughput:** 96 jobs in 0.007 s of DMA, about 14,200 jobs per second, or 30 GFLOP/s
+  (2·64·64·256 per job). That is about 13,200 cycles per job at 187.5 MHz, against 11,027 in
+  Verilator with no gaps. A single transfer this short is a rough measure.

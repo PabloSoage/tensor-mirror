@@ -1,0 +1,37 @@
+{
+ "arch": "Turing",
+ "types": "f32.f16.f16.f32",
+ "jobs": 96,
+ "elements": 393216,
+ "finite": [
+  0,
+  131072,
+  131072
+ ],
+ "pairs": {
+  "m16n8k8.f32.f16.f16.f32 vs rtl": {
+   "mismatches": 0,
+   "per_third": [
+    0,
+    0,
+    0
+   ]
+  },
+  "m16n8k8.f32.f16.f16.f32 vs model": {
+   "mismatches": 0,
+   "per_third": [
+    0,
+    0,
+    0
+   ]
+  },
+  "rtl vs model": {
+   "mismatches": 0,
+   "per_third": [
+    0,
+    0,
+    0
+   ]
+  }
+ }
+}
