@@ -1,0 +1,10 @@
+-0.059 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/u_regs/s_axi_rdata_reg[13]/R
+-0.059 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/u_regs/s_axi_rdata_reg[18]/R
+-0.059 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/u_regs/s_axi_rdata_reg[21]/R
+-0.059 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/u_regs/s_axi_rdata_reg[9]/R
+-0.057 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/u_regs/s_axi_rdata_reg[28]/R
+-0.057 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/u_regs/s_axi_rdata_reg[30]/R
+-0.057 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/u_regs/s_axi_rdata_reg[8]/R
+-0.056 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/u_regs/s_axi_rdata_reg[10]/R
+-0.056 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/u_regs/s_axi_rdata_reg[19]/R
+-0.003 levels 0 sys_i/rst/U0/ACTIVE_LOW_PR_OUT_DFF[0].FDRE_PER_N/C -> sys_i/tm/inst/wait_n_reg[11]/R
