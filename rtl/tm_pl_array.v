@@ -107,7 +107,9 @@ module tm_pl_array #(
     wire [31:0] wc = (ic / R) * BPRC + nc_ % BPRC;
 
     // ---- run: issue counters (stage I), bank reads, then the array (stage R) -----------
-    integer mb, nbk, s, q, wait_n;
+    // they address 32 BRAMs across the device: replicated, or the route misses 214 MHz (H-030)
+    (* max_fanout = 8 *) integer mb, nbk, s, q;
+    integer wait_n;
     wire issue = state == RUN;
     wire [31:0] ii = mb * Q + q;            // row of every slot-q unit, divided by R
     wire [31:0] ra = ii * BPRA + s / WPA;
@@ -184,7 +186,7 @@ module tm_pl_array #(
                 wire [31:0] waddr = load ? wc : res_addr;
                 wire [WE*EW-1:0] wdata = load ? load_word : {WE{d_arr[(r*C + c)*32 +: EW]}};
                 wire [31:0] raddr = state == DRAIN ? rd_addr : rc;
-                reg [WE*EW-1:0] mem [0:DC-1];
+                (* ram_style = "distributed" *) reg [WE*EW-1:0] mem [0:DC-1];  // small: LUTRAM
                 reg [WE*EW-1:0] rd;
                 integer k;
                 always @(posedge clk) begin
