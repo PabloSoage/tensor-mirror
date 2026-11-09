@@ -1,0 +1,7 @@
+vivado 2026.1
+tensor-mirror 1ddeb6d0d74b8af653a854c4941b3ec9e972bb7c (dirty: rebuild after commit)
+part xck26-sfvc784-2LV-c
+pl_mhz 200
+top tm_pl_array
+generics R:8 C:4 MJ:128 NJ:64 Q:16 KJ:256 L:8 F:24 AE:5 AM:10 ALSB:0 AW:16 ASPEC:0 BE:5 BM:10 BLSB:0 BW:16 BSPEC:0 XP:1 SP:1 EZERO:-20 RNE:1 CE:5 CM:10 CLSB:0 DE:5 DM:10 DLSB:0
+date 2026-11-09T14:58:28
