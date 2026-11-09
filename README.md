@@ -66,9 +66,18 @@ NVIDIA GPU, from Volta to RTX Blackwell, including MXFP4/NVFP4 block scaling.
       LUTRAM doubles, which takes 3,300–13,100 LUT.
     - **Timing:** 4 × 4 f16 still meets 214.29 MHz, and every build meets 187.5 MHz.
     - **On the board:** not yet run, so its throughput is still a prediction.
+  - **RTX Blackwell, with the instruction's k as a parameter** (H-035): the GEMM loop can
+    use an instruction shorter than the unit, such as `m16n8k8` in f16 (L = 16) or
+    `m16n8k16` in FP8 (L = 32). Each instruction is then a partial group, rounded into D.
+    Changing k changes D in 9–93 % of the elements, so the array takes KI and pads the
+    group with zeros (`results/gpu/h035-gemm-159f42a/`):
+    - **the GPU:** an RTX 5070 Ti gives the model's D in 8 loops, 3.1 million elements;
+    - **the RTL:** a 4 × 4 f16 array and a 2 × 4 FP8 array give that D in Verilator, with
+      KI = k. With KI = L against the k < L loop, they fail;
+    - **the builds:** both close at 187.5 MHz: 65,707 LUT for the f16 array and 49,347 for
+      FP8, which uses no DSP.
 
-Next: the RTX Blackwell instructions on the array (K per instruction below L), and the
-board run of the double-buffered arrays.
+Next: the board runs of the double-buffered and RTX Blackwell arrays.
 
 ## Pictures
 
