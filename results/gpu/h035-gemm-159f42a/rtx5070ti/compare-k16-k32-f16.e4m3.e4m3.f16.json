@@ -1,0 +1,21 @@
+{
+ "arch": "RTX Blackwell",
+ "types": "f16.e4m3.e4m3.f16",
+ "jobs": 96,
+ "elements": 393216,
+ "finite": [
+  243,
+  131072,
+  12122
+ ],
+ "pairs": {
+  "m16n8k16.f16.e4m3.e4m3.f16 vs m16n8k32.f16.e4m3.e4m3.f16": {
+   "mismatches": 93681,
+   "per_third": [
+    241,
+    80830,
+    12610
+   ]
+  }
+ }
+}
