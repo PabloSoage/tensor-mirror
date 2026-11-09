@@ -76,8 +76,17 @@ NVIDIA GPU, from Volta to RTX Blackwell, including MXFP4/NVFP4 block scaling.
       KI = k. With KI = L against the k < L loop, they fail;
     - **the builds:** both close at 187.5 MHz: 65,707 LUT for the f16 array and 49,347 for
       FP8, which uses no DSP.
+    - **a 4 × 4 FP8 array** (H-036) gives the same D in Verilator, and closes at 187.5 MHz
+      with 81,743 LUT and no DSP.
+  - **Block-scaled GEMM, MXFP4 and NVFP4** (H-037): a 4 × 4 array of `gst_fdpa.sv` units,
+    with the scale factors in their own beats (`tools/bs_gemm.py`):
+    - **the GPU:** the 5070 Ti's loops of 4 `m16n8k64` block-scale `mma.sync` per tile match
+      the chained model, in 786,432 elements;
+    - **the RTL:** the array gives their D byte for byte in Verilator;
+    - **the build:** the MXFP4 one closes at 187.5 MHz with 58,460 LUT and 64 DSP
+      (`results/gpu/h037-bs-gemm-97952fe/`, `results/fpga/kv260-h037/`).
 
-Next: the board runs of the double-buffered and RTX Blackwell arrays.
+Next: the board runs of the double-buffered, RTX Blackwell and block-scaled arrays.
 
 ## Pictures
 
