@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Build rtl/tm_pl_array.v (an R x C tm_array of one instruction) with Verilator and run its
 # testbench on the jobs of tools/gemm_cases.py: with random valid/ready, then with neither
-# held back (cycles per job), then the SLOT, ALWAYS_READY and SIDE mutants, which must fail.
+# held back (cycles per job), then the SLOT, ALWAYS_READY (also with a slow output) and SIDE
+# mutants, which must fail.
 #   tools/run_array.sh <out.jsonl> <dir> <arch> <D.A.B.C> [R] [C] [Q] [M] [N] [K] [KI]
 #   tools/run_array.sh <out.jsonl> <dir> gst <block-scale instruction> [R] [C] [Q] [M] [N] [K]
 # KI is the k of the instruction the GPU's loop ran, L by default (H-035). With gst the units
@@ -64,6 +65,9 @@ run tm_pl_array "$dir/rtl/gemm_d.bin" 3 70 70
 run tm_pl_array "$b/$tag-full.bin" 1 100 100
 run SLOT "$b/$tag-slot.bin" 3 70 70
 run ALWAYS_READY "$b/$tag-ready.bin" 3 70 70
+# when the array waits on nothing, a side is always free and 70/70 cannot catch ALWAYS_READY;
+# a slow output can (H-036, H-037)
+run ALWAYS_READY "$b/$tag-ready-bp.bin" 3 100 30
 run SIDE "$b/$tag-side.bin" 3 70 70
 [ "$arch" = gst ] && run SCALE "$b/$tag-scale.bin" 3 70 70
 exit 0
