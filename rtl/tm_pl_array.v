@@ -1,8 +1,10 @@
 // tm_pl_array - a PL top for the KV260 build with an R x C rtl/tm_array.sv of one
 // instruction (tfdpa's parameters, from tools/rtl_params.py), computing one GEMM job of a
 // fixed size per build, D = C + A B with A MJ x KJ, B KJ x NJ, C and D MJ x NJ, fed and
-// drained by the AXI DMA of rtl/tm_pl.v's system. K is chained in order, groups of L,
-// through D's format: a loop of mma.sync on the GPU (H-027).
+// drained by the AXI DMA of rtl/tm_pl.v's system. K is chained in order, groups of KI,
+// through D's format: a loop of mma.sync on the GPU (H-027), whose instruction is k = KI.
+// KI <= L: an instruction shorter than the unit (RTX Blackwell's m16n8k8 in f16, L = 16) is
+// a group of KI terms and L - KI zeros, rounded into D's format (H-035).
 //
 //   s_axis  a job is A, then B^T, then C, each row major and packed without gaps (element
 //           k of a row in the bits AW*k.., the first element of a beat in its lowest bits):
@@ -12,7 +14,7 @@
 //           the last beat of a job whose last input beat had tlast, so one DMA transfer can
 //           hold many jobs. A job's D comes out after its whole input, in job order.
 //   s_axi   AXI4-Lite registers (rtl/tm_regs.v), VERSION 3, LATENCY the unit's, with
-//             0x024 L   0x028 Q * 65536 + R * 256 + C
+//             0x024 L, plus KI * 65536 if KI < L   0x028 Q * 65536 + R * 256 + C
 //             0x02C s_axis beats per job   0x030 m_axis beats per job
 //
 // Inside, A is in R banks (row i in bank i % R) and B^T in C banks (row j in bank j % C),
@@ -32,6 +34,7 @@ module tm_pl_array #(
     parameter R = 4, parameter C = 4, parameter Q = 16,
     parameter MJ = 64, parameter NJ = 64, parameter KJ = 256,
     parameter L = 4,
+    parameter KI = L,                       // k of the emulated instruction, <= L
     parameter F = 23,
     parameter EZERO = -131,
     parameter RNE = 0,
@@ -79,9 +82,9 @@ module tm_pl_array #(
     localparam EW = DLSB + DE + DM + 1;     // bits of a C or D element
     localparam BPRA = KJ * AW / 256;        // beats per row of A
     localparam BPRB = KJ * BW / 256;        // beats per row of B^T
-    localparam WPA = 256 / (L * AW);        // groups of L per word of A
-    localparam WPB = 256 / (L * BW);
-    localparam S = KJ / L;                  // steps of a chain
+    localparam WPA = 256 / (KI * AW);       // groups of KI per word of A
+    localparam WPB = 256 / (KI * BW);
+    localparam S = KJ / KI;                 // steps of a chain
     localparam WE = 256 / EW / C;           // elements per word of a C/D bank
     localparam BPRC = NJ * EW / 256;        // beats per row of C, words per row of a C/D bank
     localparam ME = 128 / EW;               // elements per beat of D
@@ -253,11 +256,18 @@ module tm_pl_array #(
     wire [C*L*BW-1:0] b_in;
     wire [R*C*32-1:0] c_in;
     generate
+        // a group of KI terms in the low lanes; the L - KI above are zeros
         for (r = 0; r < R; r = r + 1) begin : g_ain
-            assign a_in[r*L*AW +: L*AW] = a_rd[r*256 + sa1*L*AW +: L*AW];
+            assign a_in[r*L*AW +: KI*AW] = a_rd[r*256 + sa1*KI*AW +: KI*AW];
+            if (KI < L) begin : g_pad
+                assign a_in[r*L*AW + KI*AW +: (L - KI)*AW] = {((L - KI)*AW){1'b0}};
+            end
         end
         for (c = 0; c < C; c = c + 1) begin : g_bin
-            assign b_in[c*L*BW +: L*BW] = b_rd[c*256 + sb1*L*BW +: L*BW];
+            assign b_in[c*L*BW +: KI*BW] = b_rd[c*256 + sb1*KI*BW +: KI*BW];
+            if (KI < L) begin : g_pad
+                assign b_in[c*L*BW + KI*BW +: (L - KI)*BW] = {((L - KI)*BW){1'b0}};
+            end
         end
         for (r = 0; r < R; r = r + 1) begin : g_cin
             for (c = 0; c < C; c = c + 1) begin : g_cinc
@@ -356,7 +366,7 @@ module tm_pl_array #(
     end
 
     // ---- registers and counters (rtl/tm_regs.v) -----------------------------------------------
-    tm_regs #(.VERSION(3), .BUILD(BUILD), .LATENCY(LATENCY), .F(F), .X0(L), .X1(Q * 65536 + R * 256 + C),
+    tm_regs #(.VERSION(3), .BUILD(BUILD), .LATENCY(LATENCY), .F(F), .X0(L + (KI < L ? KI * 65536 : 0)), .X1(Q * 65536 + R * 256 + C),
               .X2(NIN), .X3(NOUT)) u_regs (
         .clk(clk), .pl_resetn(rstn),
         .s_axi_awaddr(s_axi_awaddr), .s_axi_awvalid(s_axi_awvalid), .s_axi_awready(s_axi_awready),
