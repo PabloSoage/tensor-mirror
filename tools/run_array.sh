@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build rtl/tm_pl_array.v (an R x C tm_array of one instruction) with Verilator and run its
 # testbench on the jobs of tools/gemm_cases.py: with random valid/ready, then with neither
-# held back (cycles per job), then the SLOT and ALWAYS_READY mutants, which must fail.
+# held back (cycles per job), then the SLOT, ALWAYS_READY and SIDE mutants, which must fail.
 #   tools/run_array.sh <out.jsonl> <dir> <arch> <D.A.B.C> [R] [C] [Q] [M] [N] [K]
 # <dir> holds gemm.json, in.bin and expected.bin (gemm_cases.py rtl); the D of the first run
 # goes to <dir>/rtl/gemm_d.bin. The units have XP = 1 and SP = 1, as on the board.
@@ -39,7 +39,9 @@ run() {  # name, D file, seed, p(valid), p(ready)
 build tm_pl_array
 build SLOT +define+MUT_SLOT
 build ALWAYS_READY +define+MUT_ALWAYS_READY
+build SIDE +define+MUT_SIDE
 run tm_pl_array "$dir/rtl/gemm_d.bin" 3 70 70
 run tm_pl_array "$b/$tag-full.bin" 1 100 100
 run SLOT "$b/$tag-slot.bin" 3 70 70
 run ALWAYS_READY "$b/$tag-ready.bin" 3 70 70
+run SIDE "$b/$tag-side.bin" 3 70 70

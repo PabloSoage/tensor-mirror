@@ -10,8 +10,7 @@
 //           width of C's and D's elements (16 or 32; D's format is C's).
 //   m_axis  D, row major, 128/EW elements per beat, MJ*NJ*EW/128 beats per job; tlast on
 //           the last beat of a job whose last input beat had tlast, so one DMA transfer can
-//           hold many jobs. A job's D comes out after its whole input, and the next job is
-//           taken after it (no double buffering).
+//           hold many jobs. A job's D comes out after its whole input, in job order.
 //   s_axi   AXI4-Lite registers (rtl/tm_regs.v), VERSION 3, LATENCY the unit's, with
 //             0x024 L   0x028 Q * 65536 + R * 256 + C
 //             0x02C s_axis beats per job   0x030 m_axis beats per job
@@ -20,6 +19,13 @@
 // 256-bit words; C and D share R x C banks, element (i, j) in bank (i % R, j % C), WE =
 // 256 / EW / C elements per word. The array computes blocks of R*Q x C outputs: slot q of
 // unit (r, c) is row mb*R*Q + q*R + r, column nb*C + c. Every dimension is a power of 2.
+//
+// Double buffered (H-034): every bank holds two jobs, its two sides. A and B take the side
+// as their address's top bit; C/D has one LUTRAM per side, since the load (C of the next
+// job) and the array (D of this one) write in the same cycle. Three processes each walk the
+// sides in turn: the load fills a FREE side and marks it LOADED, the array computes a
+// LOADED side and marks it DONE, the drain sends a DONE side's D and marks it FREE. Each
+// state has one process that leaves it, so no two write a side's state at once.
 
 module tm_pl_array #(
     parameter [31:0] BUILD = 32'h0,
@@ -88,8 +94,11 @@ module tm_pl_array #(
     localparam NOUT = MJ * BPRD;            // output beats
     localparam DA = MJ / R * BPRA, DB = NJ / C * BPRB, DC = MJ / R * BPRC;  // bank depths
 
-    localparam LOAD = 2'd0, RUN = 2'd1, WAIT = 2'd2, DRAIN = 2'd3;
-    reg [1:0] state;
+    localparam FREE = 2'd0, LOADED = 2'd1, DONE = 2'd2;      // a side's state
+    localparam IDLE = 2'd0, RUN = 2'd1, WAIT = 2'd2, DRAIN = 2'd3;
+    reg [1:0] side [0:1];
+    reg ls, cs, ds;                         // the side being loaded, computed, drained
+    reg [1:0] cstate, dstate;               // the array: IDLE, RUN, WAIT; the drain: IDLE, DRAIN
 
     // pl_resetn from one flip-flop of proc_sys_reset to hundreds here misses 214 MHz (H-032):
     // two registers, the second replicated, and everything here (tm_regs too) uses that copy
@@ -105,7 +114,7 @@ module tm_pl_array #(
 `ifdef MUT_ALWAYS_READY  // mutant for the testbench: beats sent while the array runs are lost
     assign s_axis_tready = 1'b1;
 `else
-    assign s_axis_tready = rstn && state == LOAD && !(w_v && w_last);  // not while the last is written
+    assign s_axis_tready = rstn && side[ls] == FREE;
 `endif
     wire beat = s_axis_tvalid && s_axis_tready;
     integer n;  // input beats of this job so far
@@ -114,9 +123,9 @@ module tm_pl_array #(
     wire [31:0] ia = n / BPRA, ib = nb_ / BPRB, ic = nc_ / BPRC;  // the row being loaded
 
     // A beat is written the cycle after it is taken, from registers placed near the banks:
-    // s_axis_tdata straight into 32 BRAMs misses 214 MHz (H-031). The array starts after the
+    // s_axis_tdata straight into 32 BRAMs misses 214 MHz (H-031). The side is LOADED once the
     // job's last beat is written.
-    reg w_a, w_b, w_c;
+    reg w_a, w_b, w_c, w_side;
     reg [31:0] w_ra, w_rb, w_rc;            // bank of the beat: row % R, % C, % R
     reg [31:0] wa, wb, wc;                  // its address in that bank
     (* max_fanout = 8 *) reg [255:0] w_data;
@@ -126,6 +135,7 @@ module tm_pl_array #(
         w_a <= in_a;
         w_b <= in_b;
         w_c <= in_c;
+        w_side <= ls;
         w_ra <= ia % R;
         w_rb <= ib % C;
         w_rc <= ic % R;
@@ -139,7 +149,7 @@ module tm_pl_array #(
     // they address 32 BRAMs across the device: replicated, or the route misses 214 MHz (H-030)
     (* max_fanout = 8 *) integer mb, nbk, s, q;
     integer wait_n;
-    wire issue = state == RUN;
+    wire issue = cstate == RUN;
     wire [31:0] ii = mb * Q + q;            // row of every slot-q unit, divided by R
     wire [31:0] ra = ii * BPRA + s / WPA;
     wire [31:0] rb = nbk * BPRB + s / WPB;
@@ -161,45 +171,45 @@ module tm_pl_array #(
     reg [1:0] cnt;                          // entries in the FIFO
     reg inflight;                           // a read whose data reaches the FIFO next cycle
     wire pop = m_axis_tvalid && m_axis_tready;
-    wire rd_d = state == DRAIN && o < NOUT && cnt + inflight - pop <= 1;
+    wire rd_d = dstate == DRAIN && o < NOUT && cnt + inflight - pop <= 1;
     wire [31:0] io = o / BPRD, j0 = (o % BPRD) * ME;
     wire [31:0] rd_addr = (io / R) * BPRC + (j0 / C) / WE;
     reg [31:0] dr1, dlane1;
     reg dlast1;
-    reg job_last;                           // this job's last input beat had tlast
+    reg job_last [0:1];                     // the side's job's last input beat had tlast
     always @(posedge clk) begin
         dr1 <= io % R;
         dlane1 <= (j0 / C) % WE;
-        dlast1 <= o == NOUT - 1 && job_last;
-        if (beat && n == NIN - 1) job_last <= s_axis_tlast;
+        dlast1 <= o == NOUT - 1 && job_last[ds];
+        if (beat && n == NIN - 1) job_last[ls] <= s_axis_tlast;
     end
 
     // ---- the banks ----------------------------------------------------------------------
     wire [R*256-1:0] a_rd;
     wire [C*256-1:0] b_rd;
-    wire [R*C*WE*EW-1:0] cd_rd;
+    wire [R*C*WE*EW-1:0] cd_rd, dd_rd;      // C/D read for the array, for the drain
     wire [R*C*32-1:0] d_arr;
     wire out_v;
     wire [31:0] res_addr, res_lane;         // where a final d goes, LATENCY after stage R
     pipe_delay #(.W(32), .D(LATENCY)) u_ra (.clk(clk), .ce(1'b1), .x(rc1), .y(res_addr));
     pipe_delay #(.W(32), .D(LATENCY)) u_rl (.clk(clk), .ce(1'b1), .x(lane1), .y(res_lane));
-    genvar r, c, v;
+    genvar r, c, v, sd;
     generate
         for (r = 0; r < R; r = r + 1) begin : g_a
-            reg [255:0] mem [0:DA-1];
+            reg [255:0] mem [0:2*DA-1];
             reg [255:0] rd;
             always @(posedge clk) begin
-                if (w_v && w_a && w_ra == r) mem[wa] <= w_data;
-                rd <= mem[ra];
+                if (w_v && w_a && w_ra == r) mem[w_side * DA + wa] <= w_data;
+                rd <= mem[cs * DA + ra];
             end
             assign a_rd[r*256 +: 256] = rd;
         end
         for (c = 0; c < C; c = c + 1) begin : g_b
-            reg [255:0] mem [0:DB-1];
+            reg [255:0] mem [0:2*DB-1];
             reg [255:0] rd;
             always @(posedge clk) begin
-                if (w_v && w_b && w_rb == c) mem[wb] <= w_data;
-                rd <= mem[rb];
+                if (w_v && w_b && w_rb == c) mem[w_side * DB + wb] <= w_data;
+                rd <= mem[cs * DB + rb];
             end
             assign b_rd[c*256 +: 256] = rd;
         end
@@ -210,21 +220,30 @@ module tm_pl_array #(
                 for (v = 0; v < WE; v = v + 1) begin : g_v
                     assign load_word[v*EW +: EW] = w_data[(c + C*v)*EW +: EW];
                 end
-                wire load = w_v && w_c && w_rc == r;
-                wire res = out_v;
-                wire [31:0] waddr = load ? wc : res_addr;
-                wire [WE*EW-1:0] wdata = load ? load_word : {WE{d_arr[(r*C + c)*32 +: EW]}};
-                wire [31:0] raddr = state == DRAIN ? rd_addr : rc;
-                (* ram_style = "distributed" *) reg [WE*EW-1:0] mem [0:DC-1];  // small: LUTRAM
-                reg [WE*EW-1:0] rd;
-                integer k;
-                always @(posedge clk) begin
-                    for (k = 0; k < WE; k = k + 1)
-                        if (load || (res && res_lane == k))
-                            mem[waddr][k*EW +: EW] <= wdata[k*EW +: EW];
-                    rd <= mem[raddr];
+                wire [WE*EW-1:0] rds [0:1];
+                for (sd = 0; sd < 2; sd = sd + 1) begin : g_sd
+                    wire load = w_v && w_c && w_rc == r && w_side == sd;
+                    wire res = out_v && cs == sd;
+                    wire [31:0] waddr = load ? wc : res_addr;
+                    wire [WE*EW-1:0] wdata = load ? load_word : {WE{d_arr[(r*C + c)*32 +: EW]}};
+                    wire [31:0] raddr = dstate == DRAIN && ds == sd ? rd_addr : rc;
+                    (* ram_style = "distributed" *) reg [WE*EW-1:0] mem [0:DC-1];  // small: LUTRAM
+                    reg [WE*EW-1:0] rd;
+                    integer k;
+                    always @(posedge clk) begin
+                        for (k = 0; k < WE; k = k + 1)
+                            if (load || (res && res_lane == k))
+                                mem[waddr][k*EW +: EW] <= wdata[k*EW +: EW];
+                        rd <= mem[raddr];
+                    end
+                    assign rds[sd] = rd;
                 end
-                assign cd_rd[(r*C + c)*WE*EW +: WE*EW] = rd;
+                assign cd_rd[(r*C + c)*WE*EW +: WE*EW] = rds[cs];
+`ifdef MUT_SIDE  // mutant for the testbench: the drain reads the side being computed
+                assign dd_rd[(r*C + c)*WE*EW +: WE*EW] = rds[cs];
+`else
+                assign dd_rd[(r*C + c)*WE*EW +: WE*EW] = rds[ds];
+`endif
             end
         end
     endgenerate
@@ -264,7 +283,7 @@ module tm_pl_array #(
         dword1 = 128'd0;
         for (cc = 0; cc < C; cc = cc + 1)
             for (vv = 0; vv < MEC; vv = vv + 1)
-                dword1[(cc + C*vv)*EW +: EW] = cd_rd[(dr1*C + cc)*WE*EW + (dlane1 + vv)*EW +: EW];
+                dword1[(cc + C*vv)*EW +: EW] = dd_rd[(dr1*C + cc)*WE*EW + (dlane1 + vv)*EW +: EW];
     end
     assign m_axis_tvalid = cnt != 0;
     assign m_axis_tdata = fifo[0][127:0];
@@ -274,18 +293,24 @@ module tm_pl_array #(
     // ---- control ----------------------------------------------------------------------------
     always @(posedge clk) begin
         if (!rstn) begin
-            state <= LOAD;
+            side[0] <= FREE; side[1] <= FREE;
+            ls <= 0; cs <= 0; ds <= 0;
+            cstate <= IDLE; dstate <= IDLE;
             n <= 0;
             mb <= 0; nbk <= 0; s <= 0; q <= 0; wait_n <= 0;
             o <= 0;
             cnt <= 0;
             inflight <= 0;
         end else begin
-            case (state)
-                LOAD: begin
-                    if (beat) n <= n == NIN - 1 ? 0 : n + 1;
-                    if (w_v && w_last) state <= RUN;  // the last beat is written this cycle
-                end
+            // the load
+            if (beat) begin
+                n <= n == NIN - 1 ? 0 : n + 1;
+                if (n == NIN - 1) ls <= !ls;
+            end
+            if (w_v && w_last) side[w_side] <= LOADED;  // the last beat is written this cycle
+            // the array
+            case (cstate)
+                IDLE: if (side[cs] == LOADED) cstate <= RUN;
                 RUN: begin
                     q <= q == Q - 1 ? 0 : q + 1;
                     if (q == Q - 1) begin
@@ -294,7 +319,7 @@ module tm_pl_array #(
                             nbk <= nbk == NBK - 1 ? 0 : nbk + 1;
                             if (nbk == NBK - 1) begin
                                 mb <= mb == MB - 1 ? 0 : mb + 1;
-                                if (mb == MB - 1) state <= WAIT;
+                                if (mb == MB - 1) cstate <= WAIT;
                             end
                         end
                     end
@@ -303,14 +328,23 @@ module tm_pl_array #(
                     wait_n <= wait_n + 1;
                     if (wait_n == LATENCY + 2) begin
                         wait_n <= 0;
-                        state <= DRAIN;
+                        side[cs] <= DONE;
+                        cs <= !cs;
+                        cstate <= IDLE;
                     end
                 end
-                DRAIN: if (o == NOUT && cnt == 0 && !inflight) begin
+                default: cstate <= IDLE;
+            endcase
+            // the drain
+            case (dstate)
+                IDLE: if (side[ds] == DONE) dstate <= DRAIN;
+                DRAIN: if (o == NOUT && !inflight) begin  // all of D read, the side is free
                     o <= 0;
-                    state <= LOAD;
+                    side[ds] <= FREE;
+                    ds <= !ds;
+                    dstate <= IDLE;
                 end
-                default: state <= LOAD;
+                default: dstate <= IDLE;
             endcase
             if (rd_d) o <= o + 1;
             inflight <= rd_d;
