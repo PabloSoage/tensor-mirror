@@ -3,35 +3,51 @@
 # testbench on the jobs of tools/gemm_cases.py: with random valid/ready, then with neither
 # held back (cycles per job), then the SLOT, ALWAYS_READY and SIDE mutants, which must fail.
 #   tools/run_array.sh <out.jsonl> <dir> <arch> <D.A.B.C> [R] [C] [Q] [M] [N] [K] [KI]
-# KI is the k of the instruction the GPU's loop ran, L by default (H-035). <dir> holds gemm.json, in.bin and expected.bin (gemm_cases.py rtl); the D of the first run
-# goes to <dir>/rtl/gemm_d.bin. The units have XP = 1 and SP = 1, as on the board.
+#   tools/run_array.sh <out.jsonl> <dir> gst <block-scale instruction> [R] [C] [Q] [M] [N] [K]
+# KI is the k of the instruction the GPU's loop ran, L by default (H-035). With gst the units
+# are rtl/gst_fdpa.sv, the jobs those of tools/bs_gemm.py, and the SCALE mutant runs too
+# (H-037). <dir> holds in.bin and expected.bin (gemm_cases.py rtl or bs_gemm.py rtl); the D
+# of the first run goes to <dir>/rtl/gemm_d.bin. The units have XP = 1 and SP = 1, as on the
+# board.
 set -u
 cd "$(dirname "$0")/.."
 out=$1 dir=$2 arch=$3 types=$4 R=${5:-4} C=${6:-4} Q=${7:-16} M=${8:-64} N=${9:-64} K=${10:-256} KI=${11:-0}
 b=build/array
 mkdir -p $b "$(dirname "$out")" "$dir/rtl"
-mapfile -t pr < <(python tools/rtl_params.py "$arch" "$types")
+if [ "$arch" = gst ]; then
+    mapfile -t pr < <(python tools/rtl_params.py gst "$types")
+else
+    mapfile -t pr < <(python tools/rtl_params.py "$arch" "$types")
+fi
 g=${pr[0]}
 read -r L aw bw <<< "${pr[1]}"
 [ "$KI" = 0 ] && KI=$L
 x0=$L
 [ "$KI" -lt "$L" ] && x0=$((KI * 65536 + L))
 tag=$(echo "$arch-$types-${R}x$C-k$KI" | tr ' ' '_')
-ew=$(echo "$types" | cut -d. -f1 | tr -dc 0-9)  # D's (and C's) element width
-d=0  # tfdpa's LATENCY with XP = 1 and SP = 1: 9 + 2 * ($clog2(L + 1) / 2)
-while [ $((1 << d)) -lt $((L + 1)) ]; do d=$((d + 1)); done
-lat=$((9 + 2 * (d / 2)))
-nin=$(( (M * K * aw + N * K * bw + M * N * ew) / 256 )) nout=$(( M * N * ew / 128 ))
+clog2() { local x=0; while [ $((1 << x)) -lt "$1" ]; do x=$((x + 1)); done; echo $x; }
+if [ "$arch" = gst ]; then
+    ew=32
+    G=$(echo "$g" | tr ' ' '\n' | sed -n 's/^-GG=//p')
+    # gst_fdpa's LATENCY with XP = 1 and SP = 1: 9 + $clog2(G) / 2 + $clog2(L / G + 1) / 2
+    lat=$((9 + $(clog2 "$G") / 2 + $(clog2 $((L / G + 1))) / 2))
+    nsc=$(( M / R * (K / L) + N / C * (K / L) ))  # the scale beats
+else
+    ew=$(echo "$types" | cut -d. -f1 | tr -dc 0-9)  # D's (and C's) element width
+    lat=$((9 + 2 * ($(clog2 $((L + 1))) / 2)))  # tfdpa's, with XP = 1 and SP = 1
+    nsc=0
+fi
+nin=$(( (M * K * aw + N * K * bw + M * N * ew) / 256 + nsc )) nout=$(( M * N * ew / 128 ))
 x1=$(( Q * 65536 + R * 256 + C ))
 build() {  # name, extra verilator flags...
     local name=$1
     shift
-    verilator --cc --exe --build -O3 -Wall -Wno-UNUSEDSIGNAL --top-module tm_pl_array \
+    verilator --cc --exe --build -O3 -Wall -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM --top-module tm_pl_array \
         -Mdir "$b/$tag-$name" -o tb $g -GXP=1 -GSP=1 -GR=$R -GC=$C -GQ=$Q -GMJ=$M -GNJ=$N -GKJ=$K -GKI=$KI "$@" \
         -CFLAGS "-DTB_NIN=$nin -DTB_NOUT=$nout -DTB_LAT=$lat -DTB_L=$x0 -DTB_X1=$x1 -DTB_X2=$nin -DTB_X3=$nout -std=c++17" \
         "$PWD/rtl/tm_regs.v" "$PWD/rtl/tm_pl_array.v" "$PWD/rtl/tm_array.sv" \
         "$PWD/rtl/pipe_max.sv" "$PWD/rtl/pipe_sum.sv" "$PWD/rtl/pipe_delay.sv" "$PWD/rtl/tfdpa.sv" \
-        "$PWD/tb/tb_tm_pl_array.cpp" > "$b/$tag-$name.log" 2>&1 \
+        "$PWD/rtl/gst_fdpa.sv" "$PWD/tb/tb_tm_pl_array.cpp" > "$b/$tag-$name.log" 2>&1 \
         || { cat "$b/$tag-$name.log"; exit 2; }
 }
 run() {  # name, D file, seed, p(valid), p(ready)
@@ -43,8 +59,11 @@ build tm_pl_array
 build SLOT +define+MUT_SLOT
 build ALWAYS_READY +define+MUT_ALWAYS_READY
 build SIDE +define+MUT_SIDE
+[ "$arch" = gst ] && build SCALE +define+MUT_SCALE
 run tm_pl_array "$dir/rtl/gemm_d.bin" 3 70 70
 run tm_pl_array "$b/$tag-full.bin" 1 100 100
 run SLOT "$b/$tag-slot.bin" 3 70 70
 run ALWAYS_READY "$b/$tag-ready.bin" 3 70 70
 run SIDE "$b/$tag-side.bin" 3 70 70
+[ "$arch" = gst ] && run SCALE "$b/$tag-scale.bin" 3 70 70
+exit 0

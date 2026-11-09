@@ -15,7 +15,7 @@ set palette {
     {240 50 230} {210 245 60} {250 190 212} {0 128 128} {220 190 255} {170 110 40}
     {255 250 200} {128 0 0} {170 255 195} {128 128 0} {255 215 180} {0 0 128} {128 128 128}
 }
-set units [get_cells -hier -filter {REF_NAME =~ *tfdpa* && IS_PRIMITIVE == 0}]
+set units [get_cells -hier -filter {REF_NAME =~ *fdpa* && IS_PRIMITIVE == 0}]  ;# tfdpa and gst_fdpa
 set i 0
 foreach u $units {
     current_instance $u

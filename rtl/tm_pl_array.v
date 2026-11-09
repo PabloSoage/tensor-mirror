@@ -9,7 +9,10 @@
 //   s_axis  a job is A, then B^T, then C, each row major and packed without gaps (element
 //           k of a row in the bits AW*k.., the first element of a beat in its lowest bits):
 //           MJ*KJ*AW/256 beats of A, NJ*KJ*BW/256 of B^T, MJ*NJ*EW/256 of C, with EW the
-//           width of C's and D's elements (16 or 32; D's format is C's).
+//           width of C's and D's elements (16 or 32; D's format is C's). With GST = 1, then
+//           SF_A, one beat per group of R rows and step (MJ/R * KJ/L beats), scale j of row
+//           g*R + r of step s in byte r*NS + j of beat g*S + s; then SF_B the same per group
+//           of C columns (tools/bs_gemm.py rtl).
 //   m_axis  D, row major, 128/EW elements per beat, MJ*NJ*EW/128 beats per job; tlast on
 //           the last beat of a job whose last input beat had tlast, so one DMA transfer can
 //           hold many jobs. A job's D comes out after its whole input, in job order.
@@ -43,7 +46,11 @@ module tm_pl_array #(
     parameter CE = 8, parameter CM = 23, parameter CLSB = 0,
     parameter DE = 8, parameter DM = 23, parameter DLSB = 0,
     parameter XP = 0,
-    parameter SP = 0
+    parameter SP = 0,
+    parameter GST = 0,                      // 1: rtl/gst_fdpa.sv units (E2M1, AW = BW = 4, L = 64)
+    parameter G = 16,                       // GST: elements per exactly summed group
+    parameter NS = 1,                       // GST: scale factors per row / column and step
+    parameter UE4M3 = 0                     // GST: scale format, 0 UE8M0, 1 UE4M3
 ) (
     (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 clk CLK" *)
     (* X_INTERFACE_PARAMETER = "ASSOCIATED_BUSIF s_axi:s_axis:m_axis, ASSOCIATED_RESET pl_resetn" *)
@@ -78,7 +85,9 @@ module tm_pl_array #(
     input  wire         m_axis_tready,
     output wire         m_axis_tlast
 );
-    localparam LATENCY = 8 + (XP != 0 ? 2 * ($clog2(L + 1) / 2) : 0) + (SP != 0 ? 1 : 0);
+    localparam LATENCY = GST != 0
+        ? 8 + (XP != 0 ? $clog2(G) / 2 + $clog2(L / G + 1) / 2 : 0) + (SP != 0 ? 1 : 0)
+        : 8 + (XP != 0 ? 2 * ($clog2(L + 1) / 2) : 0) + (SP != 0 ? 1 : 0);
     localparam EW = DLSB + DE + DM + 1;     // bits of a C or D element
     localparam BPRA = KJ * AW / 256;        // beats per row of A
     localparam BPRB = KJ * BW / 256;        // beats per row of B^T
@@ -93,7 +102,8 @@ module tm_pl_array #(
     localparam MB = MJ / (R * Q);           // blocks down M
     localparam NBK = NJ / C;                // blocks across N
     localparam NIA = MJ * BPRA, NIB = NJ * BPRB, NIC = MJ * BPRC;  // input beats
-    localparam NIN = NIA + NIB + NIC;
+    localparam NSA = GST != 0 ? MJ / R * S : 0, NSB = GST != 0 ? NJ / C * S : 0;  // scale beats
+    localparam NIN = NIA + NIB + NIC + NSA + NSB;
     localparam NOUT = MJ * BPRD;            // output beats
     localparam DA = MJ / R * BPRA, DB = NJ / C * BPRB, DC = MJ / R * BPRC;  // bank depths
 
@@ -121,16 +131,17 @@ module tm_pl_array #(
 `endif
     wire beat = s_axis_tvalid && s_axis_tready;
     integer n;  // input beats of this job so far
-    wire in_a = n < NIA, in_b = !in_a && n < NIA + NIB, in_c = !in_a && !in_b;
+    wire in_a = n < NIA, in_b = !in_a && n < NIA + NIB, in_c = !in_a && !in_b && n < NIA + NIB + NIC;
+    wire in_sa = n >= NIA + NIB + NIC && n < NIA + NIB + NIC + NSA, in_sb = n >= NIA + NIB + NIC + NSA;
     wire [31:0] nb_ = n - NIA, nc_ = n - NIA - NIB;
     wire [31:0] ia = n / BPRA, ib = nb_ / BPRB, ic = nc_ / BPRC;  // the row being loaded
 
     // A beat is written the cycle after it is taken, from registers placed near the banks:
     // s_axis_tdata straight into 32 BRAMs misses 214 MHz (H-031). The side is LOADED once the
     // job's last beat is written.
-    reg w_a, w_b, w_c, w_side;
+    reg w_a, w_b, w_c, w_sa, w_sb, w_side;
     reg [31:0] w_ra, w_rb, w_rc;            // bank of the beat: row % R, % C, % R
-    reg [31:0] wa, wb, wc;                  // its address in that bank
+    reg [31:0] wa, wb, wc, ws;              // its address in that bank; a scale beat's
     (* max_fanout = 8 *) reg [255:0] w_data;
     always @(posedge clk) begin
         w_v <= rstn && beat;
@@ -138,6 +149,9 @@ module tm_pl_array #(
         w_a <= in_a;
         w_b <= in_b;
         w_c <= in_c;
+        w_sa <= in_sa;
+        w_sb <= in_sb;
+        ws <= in_sa ? n - (NIA + NIB + NIC) : n - (NIA + NIB + NIC + NSA);
         w_side <= ls;
         w_ra <= ia % R;
         w_rb <= ib % C;
@@ -157,6 +171,12 @@ module tm_pl_array #(
     wire [31:0] ra = ii * BPRA + s / WPA;
     wire [31:0] rb = nbk * BPRB + s / WPB;
     wire [31:0] rc = ii * BPRC + nbk / WE;
+    wire [31:0] rsa = ii * S + s;           // GST: the scale beats of this step
+`ifdef MUT_SCALE  // mutant for the testbench: B's scale factors are the next step's
+    wire [31:0] rsb = nbk * S + (s == S - 1 ? 0 : s + 1);
+`else
+    wire [31:0] rsb = nbk * S + s;
+`endif
     reg v1, first1, last1;
     reg [31:0] sa1, sb1, lane1, rc1;
     always @(posedge clk) begin
@@ -191,6 +211,8 @@ module tm_pl_array #(
     wire [R*256-1:0] a_rd;
     wire [C*256-1:0] b_rd;
     wire [R*C*WE*EW-1:0] cd_rd, dd_rd;      // C/D read for the array, for the drain
+    wire [R*NS*8-1:0] sa_rd;                // GST: the step's scale factors, row r in bits r*NS*8..
+    wire [C*NS*8-1:0] sb_rd;
     wire [R*C*32-1:0] d_arr;
     wire out_v;
     wire [31:0] res_addr, res_lane;         // where a final d goes, LATENCY after stage R
@@ -215,6 +237,25 @@ module tm_pl_array #(
                 rd <= mem[cs * DB + rb];
             end
             assign b_rd[c*256 +: 256] = rd;
+        end
+        // GST: one word of R (C) rows' scale factors per (group of rows, step), two sides,
+        // read in the same cycle as A and B
+        if (GST != 0) begin : g_scales
+            reg [R*NS*8-1:0] sa_mem [0:2*NSA-1];
+            reg [C*NS*8-1:0] sb_mem [0:2*NSB-1];
+            reg [R*NS*8-1:0] sa_q;
+            reg [C*NS*8-1:0] sb_q;
+            always @(posedge clk) begin
+                if (w_v && w_sa) sa_mem[w_side * NSA + ws] <= w_data[R*NS*8-1:0];
+                if (w_v && w_sb) sb_mem[w_side * NSB + ws] <= w_data[C*NS*8-1:0];
+                sa_q <= sa_mem[cs * NSA + rsa];
+                sb_q <= sb_mem[cs * NSB + rsb];
+            end
+            assign sa_rd = sa_q;
+            assign sb_rd = sb_q;
+        end else begin : g_noscales
+            assign sa_rd = {(R*NS*8){1'b0}};
+            assign sb_rd = {(C*NS*8){1'b0}};
         end
         for (r = 0; r < R; r = r + 1) begin : g_cr
             for (c = 0; c < C; c = c + 1) begin : g_cc
@@ -280,10 +321,11 @@ module tm_pl_array #(
         .R(R), .C(C), .Q(Q), .L(L), .F(F), .EZERO(EZERO), .RNE(RNE),
         .AW(AW), .AE(AE), .AM(AM), .ALSB(ALSB), .ASPEC(ASPEC),
         .BW(BW), .BE(BE), .BM(BM), .BLSB(BLSB), .BSPEC(BSPEC),
-        .CE(CE), .CM(CM), .CLSB(CLSB), .DE(DE), .DM(DM), .DLSB(DLSB), .XP(XP), .SP(SP)
+        .CE(CE), .CM(CM), .CLSB(CLSB), .DE(DE), .DM(DM), .DLSB(DLSB), .XP(XP), .SP(SP),
+        .GST(GST), .G(G), .NS(NS), .UE4M3(UE4M3)
     ) u_array (
         .clk(clk), .in_v(v1), .in_first(first1), .in_last(last1), .a(a_in), .b(b_in), .c(c_in),
-        .out_v(out_v), .d(d_arr));
+        .sfa(sa_rd), .sfb(sb_rd), .out_v(out_v), .d(d_arr));
 
     // ---- the output FIFO ----------------------------------------------------------------
     reg [128:0] fifo [0:1];                 // {last, data}, entry 0 the head

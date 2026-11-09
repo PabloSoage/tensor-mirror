@@ -9,6 +9,10 @@
 // S steps x Q slots, one slot per cycle without gaps, in_first on the first step (c from
 // the c port) and in_last on the last; out_v then marks, LATENCY cycles later, the cycles
 // whose d is a slot's final result. Between blocks the input may pause.
+//
+// GST = 1 makes the units rtl/gst_fdpa.sv (block-scaled E2M1, K = L, groups of G, NS scale
+// factors per row of A and column of B per step, d in f32, H-037): row r also shares its
+// sfa, column c its sfb. GST = 0 leaves those ports unused.
 
 module tm_array #(
     parameter int R = 4,        // rows of units
@@ -25,7 +29,11 @@ module tm_array #(
     parameter int CE = 8, parameter int CM = 23, parameter int CLSB = 0,
     parameter int DE = 8, parameter int DM = 23, parameter int DLSB = 0,
     parameter int XP = 0,
-    parameter int SP = 0
+    parameter int SP = 0,
+    parameter int GST = 0,
+    parameter int G = 16,
+    parameter int NS = 1,
+    parameter int UE4M3 = 0
 ) (
     input  logic                            clk,
     input  logic                            in_v,
@@ -34,10 +42,14 @@ module tm_array #(
     input  logic [R-1:0][L*AW-1:0]          a,  // row r: a[k] in bits AW*k+AW-1..AW*k
     input  logic [C-1:0][L*BW-1:0]          b,
     input  logic [R-1:0][C-1:0][31:0]       c,  // read on in_first
+    input  logic [R-1:0][NS*8-1:0]          sfa,  // GST: row r's scale factors, j in bits 8j..
+    input  logic [C-1:0][NS*8-1:0]          sfb,
     output logic                            out_v,
     output logic [R-1:0][C-1:0][31:0]       d
 );
-    localparam int LATENCY = 8 + (XP != 0 ? 2 * ($clog2(L + 1) / 2) : 0) + (SP != 0 ? 1 : 0);
+    localparam int LATENCY = GST != 0
+        ? 8 + (XP != 0 ? $clog2(G) / 2 + $clog2(L / G + 1) / 2 : 0) + (SP != 0 ? 1 : 0)
+        : 8 + (XP != 0 ? 2 * ($clog2(L + 1) / 2) : 0) + (SP != 0 ? 1 : 0);
 `ifdef MUT_SLOT  // mutant for the testbench: the feedback is one cycle late, another slot's d
     localparam int FB = Q - LATENCY + 1;
 `else
@@ -51,15 +63,24 @@ module tm_array #(
         for (genvar cc = 0; cc < C; cc++) begin : g_col
             logic [31:0] fb;  // this slot's d from its last step
             pipe_delay #(.W(32), .D(FB)) u_fb (.clk(clk), .ce(1'b1), .x(d[r][cc]), .y(fb));
-            tfdpa #(
-                .L(L), .F(F), .EZERO(EZERO), .RNE(RNE),
-                .AW(AW), .AE(AE), .AM(AM), .ALSB(ALSB), .ASPEC(ASPEC),
-                .BW(BW), .BE(BE), .BM(BM), .BLSB(BLSB), .BSPEC(BSPEC),
-                .CE(CE), .CM(CM), .CLSB(CLSB), .DE(DE), .DM(DM), .DLSB(DLSB),
-                .ST(0), .XP(XP), .SP(SP), .PIPE(1)
-            ) u (
-                .clk(clk), .ce(1'b1), .a(a[r]), .b(b[cc]), .c(in_first ? c[r][cc] : fb),
-                .sfa(8'd0), .sfb(8'd0), .d(d[r][cc]));
+            if (GST != 0) begin : g_gst
+                gst_fdpa #(
+                    .K(L), .G(G), .NB(NS), .UE4M3(UE4M3), .F(F), .EZERO(EZERO),
+                    .XP(XP), .SP(SP), .PIPE(1)
+                ) u (
+                    .clk(clk), .ce(1'b1), .a(a[r]), .b(b[cc]), .c(in_first ? c[r][cc] : fb),
+                    .sfa(sfa[r]), .sfb(sfb[cc]), .d(d[r][cc]));
+            end else begin : g_t
+                tfdpa #(
+                    .L(L), .F(F), .EZERO(EZERO), .RNE(RNE),
+                    .AW(AW), .AE(AE), .AM(AM), .ALSB(ALSB), .ASPEC(ASPEC),
+                    .BW(BW), .BE(BE), .BM(BM), .BLSB(BLSB), .BSPEC(BSPEC),
+                    .CE(CE), .CM(CM), .CLSB(CLSB), .DE(DE), .DM(DM), .DLSB(DLSB),
+                    .ST(0), .XP(XP), .SP(SP), .PIPE(1)
+                ) u (
+                    .clk(clk), .ce(1'b1), .a(a[r]), .b(b[cc]), .c(in_first ? c[r][cc] : fb),
+                    .sfa(8'd0), .sfb(8'd0), .d(d[r][cc]));
+            end
         end
     end
 
